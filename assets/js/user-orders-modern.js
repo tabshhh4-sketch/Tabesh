@@ -110,7 +110,7 @@
         // Load summary data
         loadSummary() {
             $.ajax({
-                url: buildRestUrl(tabeshData.restUrl, '/user-orders/summary'),
+                url: buildRestUrl(tabeshData.restUrl, 'user-orders/summary'),
                 method: 'GET',
                 headers: {
                     'X-WP-Nonce': tabeshData.nonce
@@ -166,7 +166,7 @@
             this.showSearchLoading();
 
             $.ajax({
-                url: buildRestUrl(tabeshData.restUrl, '/user-orders/search'),
+                url: buildRestUrl(tabeshData.restUrl, 'user-orders/search'),
                 method: 'GET',
                 data: { q: query },
                 headers: {
@@ -270,7 +270,7 @@
             `);
 
             $.ajax({
-                url: buildRestUrl(tabeshData.restUrl, '/user-orders/' + orderId),
+                url: buildRestUrl(tabeshData.restUrl, 'user-orders/' + orderId),
                 method: 'GET',
                 headers: {
                     'X-WP-Nonce': tabeshData.nonce

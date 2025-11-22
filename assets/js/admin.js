@@ -339,7 +339,7 @@
             $select.prop('disabled', true);
 
             $.ajax({
-                url: buildRestUrl(tabeshAdminData.restUrl, '/update-status'),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'update-status'),
                 method: 'POST',
                 contentType: 'application/json',
                 beforeSend: (xhr) => {
@@ -516,7 +516,7 @@
 
         approveFile(fileId) {
             $.ajax({
-                url: buildRestUrl(tabeshAdminData.restUrl, '/approve-file'),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'approve-file'),
                 type: 'POST',
                 data: {
                     file_id: fileId
@@ -596,7 +596,7 @@
 
         rejectFile(fileId, reason) {
             $.ajax({
-                url: buildRestUrl(tabeshAdminData.restUrl, '/reject-file'),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'reject-file'),
                 type: 'POST',
                 data: {
                     file_id: fileId,
@@ -680,7 +680,7 @@
 
         addComment(fileId, comment) {
             $.ajax({
-                url: buildRestUrl(tabeshAdminData.restUrl, '/file-comment'),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'file-comment'),
                 type: 'POST',
                 data: {
                     file_id: fileId,
@@ -750,7 +750,7 @@
 
         loadComments(fileId) {
             $.ajax({
-                url: buildRestUrl(tabeshAdminData.restUrl, '/file-comments/' + fileId),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'file-comments/' + fileId),
                 type: 'GET',
                 headers: {
                     'X-WP-Nonce': tabeshAdminData.nonce
@@ -794,7 +794,7 @@
         downloadFile(fileId) {
             // Request a download token from the server
             $.ajax({
-                url: buildRestUrl(tabeshAdminData.restUrl, '/generate-download-token'),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'generate-download-token'),
                 type: 'POST',
                 data: {
                     file_id: fileId

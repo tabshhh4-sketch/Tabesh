@@ -282,7 +282,7 @@
                 this.$calculateBtn.prop('disabled', true).html('<span class="tabesh-loading"></span> در حال محاسبه...');
                 
                 // Construct URL safely to avoid double slashes
-                const requestUrl = buildRestUrl(tabeshData.restUrl, '/calculate-price');
+                const requestUrl = buildRestUrl(tabeshData.restUrl, 'calculate-price');
                 
                 console.log('Tabesh: Sending AJAX request to:', requestUrl);
                 console.log('Tabesh: Request data:', JSON.stringify(this.formData));
@@ -408,7 +408,7 @@
                 : tabeshData.restUrl;
             
             // Construct URL safely to avoid double slashes
-            const requestUrl = buildRestUrl(restUrl, '/submit-order');
+            const requestUrl = buildRestUrl(restUrl, 'submit-order');
 
             let ajaxSettings = {
                 url: requestUrl,

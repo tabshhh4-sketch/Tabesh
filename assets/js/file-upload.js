@@ -207,12 +207,12 @@
                 size: file.size,
                 category: category,
                 orderId: orderId,
-                url: buildRestUrl(tabeshData.restUrl, '/upload-file')
+                url: buildRestUrl(tabeshData.restUrl, 'upload-file')
             });
 
             // Upload file
             $.ajax({
-                url: buildRestUrl(tabeshData.restUrl, '/upload-file'),
+                url: buildRestUrl(tabeshData.restUrl, 'upload-file'),
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -302,7 +302,7 @@
             var $message = $container.find('.tabesh-upload-message');
 
             $.ajax({
-                url: buildRestUrl(tabeshData.restUrl, '/validate-file'),
+                url: buildRestUrl(tabeshData.restUrl, 'validate-file'),
                 type: 'POST',
                 data: {
                     file_id: fileId

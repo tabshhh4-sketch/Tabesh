@@ -353,7 +353,7 @@
 
             // Send AJAX request
             $.ajax({
-                url: buildRestUrl(tabeshData.restUrl, '/staff/update-status'),
+                url: buildRestUrl(tabeshData.restUrl, 'staff/update-status'),
                 method: 'POST',
                 contentType: 'application/json',
                 beforeSend: function(xhr) {
