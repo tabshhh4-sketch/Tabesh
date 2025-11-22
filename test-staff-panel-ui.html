@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست پنل کارمندان - Tabesh Staff Panel Test</title>
+    <link rel="stylesheet" href="assets/css/staff-panel.css">
+    <style>
+        /* Add Vazir font */
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Regular.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Vazirmatn';
+            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/fonts/webfonts/Vazirmatn-Bold.woff2') format('woff2');
+            font-weight: 700;
+            font-style: normal;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', 'Tahoma', Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="tabesh-staff-panel" dir="rtl" data-theme="light">
+        <!-- Header Section -->
+        <div class="staff-panel-header">
+            <div class="staff-profile-section">
+                <img src="https://ui-avatars.com/api/?name=علی+محمدی&background=667eea&color=fff&size=128" alt="علی محمدی" class="staff-avatar">
+                <div class="staff-info">
+                    <h2>علی محمدی</h2>
+                    <p>خوش آمدید به پنل مدیریت سفارشات</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle-btn" onclick="toggleTheme()">
+                    <span class="theme-icon">🌙</span>
+                    <span class="theme-text">حالت تاریک</span>
+                </button>
+                <button class="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge">3</span>
+                </button>
+                <button class="logout-btn">
+                    <span class="logout-icon">🚪</span>
+                    <span class="logout-text">خروج</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="جستجو در سفارشات (عنوان کتاب، شماره سفارش، قطع، مشخصات...)">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+
+        <!-- Orders Container -->
+        <div class="tabesh-panel-container">
+            <div class="tabesh-orders-grid">
+                <!-- Sample Order Card 1 -->
+                <div class="tabesh-staff-order-card" onclick="toggleCard(this)">
+                    <div class="order-card-header">
+                        <div class="order-header-top">
+                            <div class="order-number-container">
+                                <span class="order-label">سفارش:</span>
+                                <h3 class="order-number">ORD-2024-001</h3>
+                            </div>
+                            <span class="expand-icon">▼</span>
+                        </div>
+                        <div class="book-title">
+                            <span class="book-icon">📖</span>
+                            <span>آموزش برنامه‌نویسی پایتون</span>
+                        </div>
+                        <div class="card-quick-info">
+                            <div class="quick-info-item">
+                                <span class="info-icon">📏</span>
+                                <span class="info-text">رقعی</span>
+                            </div>
+                            <div class="quick-info-item">
+                                <span class="info-icon">📊</span>
+                                <span class="info-text">۵۰۰ عدد</span>
+                            </div>
+                            <div class="quick-info-item">
+                                <span class="status-badge status-processing">در حال چاپ</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-card-body">
+                        <!-- Customer Info -->
+                        <div class="customer-section">
+                            <div class="section-header">
+                                <span class="section-icon">👤</span>
+                                <h4 class="section-title">اطلاعات مشتری</h4>
+                            </div>
+                            <div class="customer-info">
+                                <span class="customer-name">محمد رضایی</span>
+                            </div>
+                        </div>
+
+                        <!-- Order Details -->
+                        <div class="order-details-section">
+                            <div class="section-header">
+                                <span class="section-icon">📋</span>
+                                <h4 class="section-title">مشخصات سفارش</h4>
+                            </div>
+                            <div class="order-info-grid">
+                                <div class="info-item">
+                                    <span class="label">تاریخ ثبت:</span>
+                                    <span class="value">۱۴۰۳/۰۸/۲۲ - ۱۴:۳۰</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">قطع کتاب:</span>
+                                    <span class="value">رقعی</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">نوع کاغذ:</span>
+                                    <span class="value">تحریر ۸۰ گرم</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">کل صفحات:</span>
+                                    <span class="value">۲۵۰ صفحه</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">تیراژ:</span>
+                                    <span class="value">۵۰۰ عدد</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">نوع صحافی:</span>
+                                    <span class="value">شومیز</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Stepper -->
+                        <div class="status-stepper">
+                            <div class="section-header">
+                                <span class="section-icon">🔄</span>
+                                <h4 class="section-title">مراحل انجام سفارش</h4>
+                            </div>
+                            <div class="stepper-container">
+                                <div class="stepper-step completed">
+                                    <div class="step-circle">
+                                        <span class="step-icon">⏳</span>
+                                    </div>
+                                    <div class="step-label">در انتظار</div>
+                                </div>
+                                <div class="stepper-step completed">
+                                    <div class="step-circle">
+                                        <span class="step-icon">✅</span>
+                                    </div>
+                                    <div class="step-label">تایید شده</div>
+                                </div>
+                                <div class="stepper-step active">
+                                    <div class="step-circle">
+                                        <span class="step-icon">🖨️</span>
+                                    </div>
+                                    <div class="step-label">در حال چاپ</div>
+                                </div>
+                                <div class="stepper-step">
+                                    <div class="step-circle">
+                                        <span class="step-number">4</span>
+                                    </div>
+                                    <div class="step-label">آماده</div>
+                                </div>
+                                <div class="stepper-step">
+                                    <div class="step-circle">
+                                        <span class="step-number">5</span>
+                                    </div>
+                                    <div class="step-label">تحویل</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Update -->
+                        <div class="status-update-section">
+                            <div class="section-header">
+                                <span class="section-icon">⚙️</span>
+                                <h4 class="section-title">به‌روزرسانی وضعیت</h4>
+                            </div>
+                            <div class="status-select-wrapper">
+                                <select class="status-update-select">
+                                    <option value="">انتخاب وضعیت جدید...</option>
+                                    <option value="pending">در انتظار بررسی</option>
+                                    <option value="confirmed">تایید شده</option>
+                                    <option value="processing">در حال چاپ</option>
+                                    <option value="ready">آماده تحویل</option>
+                                    <option value="completed">تحویل داده شده</option>
+                                </select>
+                                <button class="status-update-btn" onclick="showSuccessToast()">
+                                    <span class="btn-icon">💾</span>
+                                    <span class="btn-text">ذخیره تغییرات</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sample Order Card 2 -->
+                <div class="tabesh-staff-order-card" onclick="toggleCard(this)">
+                    <div class="order-card-header">
+                        <div class="order-header-top">
+                            <div class="order-number-container">
+                                <span class="order-label">سفارش:</span>
+                                <h3 class="order-number">ORD-2024-002</h3>
+                            </div>
+                            <span class="expand-icon">▼</span>
+                        </div>
+                        <div class="book-title">
+                            <span class="book-icon">📖</span>
+                            <span>راهنمای طراحی وب مدرن</span>
+                        </div>
+                        <div class="card-quick-info">
+                            <div class="quick-info-item">
+                                <span class="info-icon">📏</span>
+                                <span class="info-text">A5</span>
+                            </div>
+                            <div class="quick-info-item">
+                                <span class="info-icon">📊</span>
+                                <span class="info-text">۳۰۰ عدد</span>
+                            </div>
+                            <div class="quick-info-item">
+                                <span class="status-badge status-ready">آماده تحویل</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-card-body">
+                        <p style="padding: 20px; text-align: center; color: var(--text-secondary);">
+                            برای مشاهده جزئیات، کارت را کلیک کنید
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Sample Order Card 3 -->
+                <div class="tabesh-staff-order-card" onclick="toggleCard(this)">
+                    <div class="order-card-header">
+                        <div class="order-header-top">
+                            <div class="order-number-container">
+                                <span class="order-label">سفارش:</span>
+                                <h3 class="order-number">ORD-2024-003</h3>
+                            </div>
+                            <span class="expand-icon">▼</span>
+                        </div>
+                        <div class="book-title">
+                            <span class="book-icon">📖</span>
+                            <span>مبانی هوش مصنوعی</span>
+                        </div>
+                        <div class="card-quick-info">
+                            <div class="quick-info-item">
+                                <span class="info-icon">📏</span>
+                                <span class="info-text">وزیری</span>
+                            </div>
+                            <div class="quick-info-item">
+                                <span class="info-icon">📊</span>
+                                <span class="info-text">۱۰۰۰ عدد</span>
+                            </div>
+                            <div class="quick-info-item">
+                                <span class="status-badge status-confirmed">تایید شده</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-card-body">
+                        <p style="padding: 20px; text-align: center; color: var(--text-secondary);">
+                            برای مشاهده جزئیات، کارت را کلیک کنید
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCard(card) {
+            const isExpanded = card.classList.contains('expanded');
+            
+            // Collapse all cards
+            document.querySelectorAll('.tabesh-staff-order-card').forEach(c => {
+                c.classList.remove('expanded');
+            });
+            
+            // Expand clicked card if it wasn't expanded
+            if (!isExpanded) {
+                card.classList.add('expanded');
+                // Smooth scroll to card
+                setTimeout(() => {
+                    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+
+        function toggleTheme() {
+            const panel = document.querySelector('.tabesh-staff-panel');
+            const currentTheme = panel.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            panel.setAttribute('data-theme', newTheme);
+            
+            const btn = document.querySelector('.theme-toggle-btn');
+            const icon = btn.querySelector('.theme-icon');
+            const text = btn.querySelector('.theme-text');
+            
+            if (newTheme === 'dark') {
+                icon.textContent = '☀️';
+                text.textContent = 'حالت روشن';
+            } else {
+                icon.textContent = '🌙';
+                text.textContent = 'حالت تاریک';
+            }
+        }
+
+        function showSuccessToast() {
+            // Remove existing toasts
+            document.querySelectorAll('.message-toast').forEach(t => t.remove());
+            
+            const toast = document.createElement('div');
+            toast.className = 'message-toast success';
+            toast.textContent = 'وضعیت با موفقیت تغییر کرد';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, -30px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
