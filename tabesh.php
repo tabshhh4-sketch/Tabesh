@@ -1212,8 +1212,11 @@ final class Tabesh {
         $has_admin_dashboard = is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'tabesh_admin_dashboard');
         $has_file_upload = is_a($post, 'WP_Post') && has_shortcode($post->post_content, 'tabesh_file_upload');
         
+        // Check if any Tabesh shortcode is present
+        $has_any_shortcode = $has_order_form || $has_user_orders || $has_staff_panel || $has_admin_dashboard || $has_file_upload;
+        
         // Enqueue frontend styles and scripts only if any Tabesh shortcode is present
-        if ($has_order_form || $has_user_orders || $has_staff_panel || $has_admin_dashboard || $has_file_upload) {
+        if ($has_any_shortcode) {
             wp_enqueue_style(
                 'tabesh-frontend',
                 TABESH_PLUGIN_URL . 'assets/css/frontend.css',
@@ -1239,6 +1242,8 @@ final class Tabesh {
                 TABESH_VERSION
             );
 
+            // File upload script depends on tabesh-frontend which is enqueued above
+            // when $has_any_shortcode is true (which includes $has_file_upload)
             wp_enqueue_script(
                 'tabesh-file-upload',
                 TABESH_PLUGIN_URL . 'assets/js/file-upload.js',
@@ -1267,7 +1272,7 @@ final class Tabesh {
         }
 
         // Localize scripts only if tabesh-frontend is enqueued
-        if ($has_order_form || $has_user_orders || $has_staff_panel || $has_admin_dashboard || $has_file_upload) {
+        if ($has_any_shortcode) {
             // Get all settings for frontend - always returns decoded arrays/objects
             $paper_types = $this->admin->get_setting('paper_types', array(
                 'تحریر' => array(60, 70, 80),
