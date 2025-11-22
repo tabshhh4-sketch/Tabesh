@@ -11,11 +11,12 @@ if (!defined('ABSPATH')) {
 }
 
 // Ensure plugin is properly initialized
-if (!function_exists('Tabesh') || !Tabesh() || !Tabesh()->admin) {
+$tabesh = function_exists('Tabesh') ? Tabesh() : null;
+if (!$tabesh || !isset($tabesh->admin) || !$tabesh->admin) {
     wp_die(__('خطا: افزونه تابش به درستی راه‌اندازی نشده است. لطفاً از نصب صحیح WooCommerce اطمینان حاصل کنید.', 'tabesh'));
 }
 
-$admin = Tabesh()->admin;
+$admin = $tabesh->admin;
 
 // Handle restore action
 if (isset($_GET['action']) && $_GET['action'] === 'restore' && isset($_GET['order_id'])) {
