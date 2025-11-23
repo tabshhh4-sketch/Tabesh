@@ -24,7 +24,8 @@
             // Check if tabeshStaffData is available
             if (typeof window.tabeshStaffData === 'undefined') {
                 console.warn('Tabesh: tabeshStaffData not found. Printing substatus features disabled.');
-                this.showToast('error', 'خطا: اطلاعات سیستم در دسترس نیست. لطفاً صفحه را مجدداً بارگذاری کنید.');
+                // Use vanilla JS toast that doesn't depend on tabeshStaffData
+                this.showSimpleToast('خطا: اطلاعات سیستم در دسترس نیست. لطفاً صفحه را مجدداً بارگذاری کنید.');
                 // Disable all checkboxes to prevent interaction
                 $('.substatus-checkbox').prop('disabled', true);
                 return;
@@ -145,8 +146,18 @@
          * Send substatus update to server
          */
         updateSubstatus: function(data) {
-            // Safely access REST URL with fallback
-            const restBaseUrl = window.tabeshStaffData?.restUrl || window.tabeshStaffData?.rest_url;
+            // Safely access tabeshStaffData
+            const staffData = window.tabeshStaffData;
+            if (!staffData) {
+                return $.Deferred().reject({
+                    responseJSON: {
+                        message: 'خطا: اطلاعات سیستم در دسترس نیست'
+                    }
+                }).promise();
+            }
+            
+            // Access REST URL with fallback for both key variations
+            const restBaseUrl = staffData.restUrl || staffData.rest_url;
             if (!restBaseUrl) {
                 return $.Deferred().reject({
                     responseJSON: {
@@ -163,7 +174,7 @@
                 contentType: 'application/json',
                 data: JSON.stringify(data),
                 beforeSend: function(xhr) {
-                    const nonce = window.tabeshStaffData?.nonce;
+                    const nonce = staffData.nonce;
                     if (nonce) {
                         xhr.setRequestHeader('X-WP-Nonce', nonce);
                     }
@@ -254,6 +265,31 @@
                     $toast.remove();
                 }, 300);
             }, 3000);
+        },
+
+        /**
+         * Show simple toast without dependencies (for error cases)
+         */
+        showSimpleToast: function(message) {
+            const toast = document.createElement('div');
+            toast.className = 'tabesh-toast tabesh-toast-error';
+            toast.textContent = message;
+            toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10000;background:#f44336;color:#fff;padding:12px 24px;border-radius:8px;font-size:0.95rem;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.opacity = '1';
+            }, 10);
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(toast);
+                }, 300);
+            }, 4000);
         }
     };
 
