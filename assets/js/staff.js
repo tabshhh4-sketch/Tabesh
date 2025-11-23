@@ -287,7 +287,9 @@
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => {
-                    document.body.removeChild(toast);
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
                 }, 300);
             }, 4000);
         }
