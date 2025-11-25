@@ -1236,32 +1236,47 @@ final class Tabesh {
             wp_enqueue_style('dashicons');
         }
         
+        // Use filemtime for cache busting in development
+        // Helper function to safely get file modification time
+        $get_file_version = function($file_path) {
+            if (WP_DEBUG && file_exists($file_path)) {
+                $mtime = @filemtime($file_path);
+                return $mtime !== false ? $mtime : TABESH_VERSION;
+            }
+            return TABESH_VERSION;
+        };
+        
+        $css_version = $get_file_version(TABESH_PLUGIN_DIR . 'assets/css/frontend.css');
+        $js_version = $get_file_version(TABESH_PLUGIN_DIR . 'assets/js/frontend.js');
+        
         wp_enqueue_style(
             'tabesh-frontend',
             TABESH_PLUGIN_URL . 'assets/css/frontend.css',
             array(),
-            TABESH_VERSION
+            $css_version
         );
 
         wp_enqueue_style(
             'tabesh-file-upload',
             TABESH_PLUGIN_URL . 'assets/css/file-upload.css',
             array(),
-            TABESH_VERSION
+            $get_file_version(TABESH_PLUGIN_DIR . 'assets/css/file-upload.css')
         );
 
+        // Enqueue staff panel assets with higher specificity and cache busting
+        $staff_css_version = $get_file_version(TABESH_PLUGIN_DIR . 'assets/css/staff-panel.css');
         wp_enqueue_style(
             'tabesh-staff-panel',
             TABESH_PLUGIN_URL . 'assets/css/staff-panel.css',
             array(),
-            TABESH_VERSION
+            $staff_css_version
         );
 
         wp_enqueue_script(
             'tabesh-frontend',
             TABESH_PLUGIN_URL . 'assets/js/frontend.js',
             array('jquery'),
-            TABESH_VERSION,
+            $js_version,
             true
         );
 
@@ -1269,17 +1284,105 @@ final class Tabesh {
             'tabesh-file-upload',
             TABESH_PLUGIN_URL . 'assets/js/file-upload.js',
             array('jquery', 'tabesh-frontend'),
-            TABESH_VERSION,
+            $get_file_version(TABESH_PLUGIN_DIR . 'assets/js/file-upload.js'),
             true
         );
 
+        $staff_js_version = $get_file_version(TABESH_PLUGIN_DIR . 'assets/js/staff-panel.js');
         wp_enqueue_script(
             'tabesh-staff-panel',
             TABESH_PLUGIN_URL . 'assets/js/staff-panel.js',
             array('jquery'),
-            TABESH_VERSION,
+            $staff_js_version,
             true
         );
+        
+        // Add inline CSS for staff panel to ensure styles are not overridden
+        // This adds critical CSS with higher specificity to prevent theme/plugin conflicts
+        $staff_panel_inline_css = "
+            /* Critical Staff Panel Styles - Higher Specificity to prevent theme/plugin override */
+            
+            /* Wrapper styles with highest priority */
+            html body .tabesh-staff-panel {
+                font-family: 'Vazirmatn', 'Vazir', 'Tahoma', 'Arial', sans-serif !important;
+                direction: rtl !important;
+                text-align: right !important;
+                background: var(--bg-primary) !important;
+                color: var(--text-primary) !important;
+                isolation: isolate; /* Create stacking context */
+            }
+            
+            html body .tabesh-staff-panel * {
+                box-sizing: border-box !important;
+            }
+            
+            /* Ensure CSS variables are always set correctly */
+            html body .tabesh-staff-panel:not([data-theme]),
+            html body .tabesh-staff-panel[data-theme='light'] {
+                --bg-primary: #f0f3f7;
+                --bg-secondary: #ffffff;
+                --bg-card: #ffffff;
+                --bg-hover: #f8f9fb;
+                --text-primary: #1a202c;
+                --text-secondary: #4a5568;
+                --text-tertiary: #a0aec0;
+                --text-muted: #cbd5e0;
+                --accent-blue: #4a90e2;
+                --shadow-neumorphic: 12px 12px 24px rgba(163, 177, 198, 0.6), -12px -12px 24px rgba(255, 255, 255, 0.5);
+                --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+                --border-radius: 16px;
+                --border-radius-sm: 8px;
+                --border-radius-full: 9999px;
+                --transition-speed: 0.3s;
+                --z-header: 1000;
+            }
+            
+            html body .tabesh-staff-panel[data-theme='dark'] {
+                --bg-primary: #1a202c;
+                --bg-secondary: #2d3748;
+                --bg-card: #2d3748;
+                --bg-hover: #374151;
+                --text-primary: #f7fafc;
+                --text-secondary: #e2e8f0;
+                --text-tertiary: #a0aec0;
+                --text-muted: #718096;
+                --shadow-neumorphic: 12px 12px 24px rgba(0, 0, 0, 0.5), -12px -12px 24px rgba(74, 85, 104, 0.1);
+                --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+            }
+            
+            /* Prevent theme/plugin button style conflicts */
+            html body .tabesh-staff-panel button,
+            html body .tabesh-staff-panel .tabesh-btn,
+            html body .tabesh-staff-panel input[type='button'],
+            html body .tabesh-staff-panel input[type='submit'] {
+                font-family: 'Vazirmatn', 'Vazir', 'Tahoma', 'Arial', sans-serif !important;
+                line-height: normal !important;
+            }
+            
+            /* Prevent theme/plugin input style conflicts */
+            html body .tabesh-staff-panel input,
+            html body .tabesh-staff-panel select,
+            html body .tabesh-staff-panel textarea {
+                font-family: 'Vazirmatn', 'Vazir', 'Tahoma', 'Arial', sans-serif !important;
+                direction: rtl !important;
+                text-align: right !important;
+            }
+            
+            /* Ensure header stays on top */
+            html body .tabesh-staff-panel .staff-panel-header {
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 1000 !important;
+            }
+        ";
+        wp_add_inline_style('tabesh-staff-panel', $staff_panel_inline_css);
+        
+        // Debug logging for asset loading (only in debug mode)
+        if (WP_DEBUG && WP_DEBUG_LOG) {
+            error_log('Tabesh: Frontend assets enqueued');
+            error_log('Tabesh: Staff Panel CSS version: ' . $staff_css_version);
+            error_log('Tabesh: Staff Panel JS version: ' . $staff_js_version);
+        }
 
         // Get all settings for frontend - always returns decoded arrays/objects
         $paper_types = $this->admin->get_setting('paper_types', array(
@@ -1307,6 +1410,7 @@ final class Tabesh {
             'nonce' => wp_create_nonce('wp_rest'),
             'ajaxNonce' => wp_create_nonce('tabesh_nonce'), // For AJAX backward compatibility (field name: 'security')
             'logoutUrl' => wp_logout_url(home_url()),
+            'debug' => WP_DEBUG, // Add debug flag for conditional console logging
             // Settings - all decoded as arrays/objects for frontend use
             'settings' => array(
                 'paperTypes' => $paper_types,
