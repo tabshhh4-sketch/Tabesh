@@ -292,8 +292,8 @@ class Tabesh_Print_Substeps {
             );
             
             // Log the status change
-            $current_user = wp_get_current_user();
             $staff_user_id = get_current_user_id();
+            $current_user = wp_get_current_user();
             $logs_table = $wpdb->prefix . 'tabesh_logs';
             
             $wpdb->insert(
@@ -303,11 +303,9 @@ class Tabesh_Print_Substeps {
                     'user_id' => $current_order->user_id,
                     'staff_user_id' => $staff_user_id,
                     'action' => 'status_change',
-                    'old_status' => 'processing',
+                    'old_status' => $current_order->status,
                     'new_status' => 'ready',
-                    'description' => sprintf(
-                        __('وضعیت به صورت خودکار از "در حال چاپ" به "آماده تحویل" تغییر کرد (تمام مراحل چاپ تکمیل شد)', 'tabesh')
-                    )
+                    'description' => __('وضعیت به صورت خودکار از "در حال چاپ" به "آماده تحویل" تغییر کرد (تمام مراحل چاپ تکمیل شد)', 'tabesh')
                 ),
                 array('%d', '%d', '%d', '%s', '%s', '%s', '%s')
             );

@@ -314,7 +314,7 @@ $status_order = array('pending', 'confirmed', 'processing', 'ready', 'completed'
                                         
                                         <div class="print-substeps-list">
                                             <?php foreach ($substeps as $substep): ?>
-                                                <div class="print-substep-item <?php echo $substep->is_completed ? 'completed' : ''; ?>" 
+                                                <div class="print-substep-item <?php echo esc_attr($substep->is_completed ? 'completed' : ''); ?>" 
                                                      data-substep-id="<?php echo esc_attr($substep->id); ?>">
                                                     <div class="substep-checkbox-wrapper">
                                                         <input 
