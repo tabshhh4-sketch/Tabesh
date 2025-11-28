@@ -1067,6 +1067,31 @@ final class Tabesh {
             'callback' => array($this->user, 'get_order_details'),
             'permission_callback' => array($this, 'is_user_logged_in')
         ));
+        
+        // Admin dashboard routes
+        register_rest_route(TABESH_REST_NAMESPACE, '/admin/search-orders', array(
+            'methods' => 'GET',
+            'callback' => array($this->admin, 'rest_search_orders'),
+            'permission_callback' => array($this, 'can_manage_admin')
+        ));
+        
+        register_rest_route(TABESH_REST_NAMESPACE, '/admin/order-details/(?P<order_id>\d+)', array(
+            'methods' => 'GET',
+            'callback' => array($this->admin, 'rest_get_order_details'),
+            'permission_callback' => array($this, 'can_manage_admin')
+        ));
+        
+        register_rest_route(TABESH_REST_NAMESPACE, '/admin/update-order/(?P<order_id>\d+)', array(
+            'methods' => 'POST',
+            'callback' => array($this->admin, 'rest_update_order'),
+            'permission_callback' => array($this, 'can_manage_admin')
+        ));
+        
+        register_rest_route(TABESH_REST_NAMESPACE, '/files/generate-token', array(
+            'methods' => 'POST',
+            'callback' => array($this, 'rest_generate_file_token'),
+            'permission_callback' => array($this, 'can_manage_admin')
+        ));
     }
 
     /**
@@ -1075,6 +1100,57 @@ final class Tabesh {
      */
     public function can_manage_orders() {
         return current_user_can('manage_woocommerce') || current_user_can('edit_shop_orders');
+    }
+
+    /**
+     * Check if user can access admin dashboard
+     * Only users with manage_woocommerce capability (full admin access)
+     */
+    public function can_manage_admin() {
+        return current_user_can('manage_woocommerce');
+    }
+
+    /**
+     * REST: Generate file download token
+     *
+     * @param WP_REST_Request $request Request object
+     * @return WP_REST_Response Response object
+     */
+    public function rest_generate_file_token($request) {
+        $params = $request->get_json_params();
+        $file_id = intval($params['file_id'] ?? 0);
+        $user_id = get_current_user_id();
+
+        if ($file_id <= 0) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'message' => __('شناسه فایل نامعتبر است', 'tabesh')
+            ), 400);
+        }
+
+        // Use file security class to generate token
+        $file_security = new Tabesh_File_Security();
+        $result = $file_security->generate_download_token($file_id, $user_id, 24);
+
+        if (!$result['success']) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'message' => $result['message']
+            ), 403);
+        }
+
+        // Build download URL
+        $download_url = add_query_arg(array(
+            'tabesh_download' => 1,
+            'file_id' => $file_id,
+            'token' => $result['token']
+        ), home_url());
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'download_url' => $download_url,
+            'expires_at' => $result['expires_at']
+        ), 200);
     }
 
     /**
