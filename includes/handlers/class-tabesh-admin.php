@@ -674,6 +674,273 @@ class Tabesh_Admin {
     }
 
     /**
+     * REST API: Search orders for admin dashboard
+     *
+     * @param WP_REST_Request $request Request object
+     * @return WP_REST_Response Response object
+     */
+    public function rest_search_orders($request) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'tabesh_orders';
+
+        $query = sanitize_text_field($request->get_param('query') ?? '');
+        $status = sanitize_text_field($request->get_param('status') ?? '');
+        $sort_by = sanitize_text_field($request->get_param('sort_by') ?? 'newest');
+        $page = max(1, intval($request->get_param('page') ?? 1));
+        $per_page = min(100, max(1, intval($request->get_param('per_page') ?? 20)));
+
+        $offset = ($page - 1) * $per_page;
+
+        // Build WHERE clause
+        $where_conditions = array('archived = 0');
+        $params = array();
+
+        if (!empty($query)) {
+            $query_like = '%' . $wpdb->esc_like($query) . '%';
+            $where_conditions[] = "(
+                o.order_number LIKE %s 
+                OR o.book_title LIKE %s 
+                OR o.book_size LIKE %s
+                OR u.display_name LIKE %s
+                OR u.ID = %s
+            )";
+            $params[] = $query_like;
+            $params[] = $query_like;
+            $params[] = $query_like;
+            $params[] = $query_like;
+            $params[] = $query; // Direct user ID match
+        }
+
+        if (!empty($status)) {
+            $where_conditions[] = "o.status = %s";
+            $params[] = $status;
+        }
+
+        $where_sql = implode(' AND ', $where_conditions);
+
+        // Build ORDER BY clause
+        switch ($sort_by) {
+            case 'oldest':
+                $order_sql = 'o.created_at ASC';
+                break;
+            case 'quantity_high':
+                $order_sql = 'o.quantity DESC';
+                break;
+            case 'quantity_low':
+                $order_sql = 'o.quantity ASC';
+                break;
+            case 'price_high':
+                $order_sql = 'o.total_price DESC';
+                break;
+            case 'price_low':
+                $order_sql = 'o.total_price ASC';
+                break;
+            case 'newest':
+            default:
+                $order_sql = 'o.created_at DESC';
+        }
+
+        // Get total count
+        $count_sql = "SELECT COUNT(*) FROM $table o LEFT JOIN {$wpdb->users} u ON o.user_id = u.ID WHERE $where_sql";
+        if (!empty($params)) {
+            $count_sql = $wpdb->prepare($count_sql, $params);
+        }
+        $total = (int) $wpdb->get_var($count_sql);
+
+        // Get orders
+        $orders_sql = "SELECT o.*, u.display_name as customer_name 
+                       FROM $table o 
+                       LEFT JOIN {$wpdb->users} u ON o.user_id = u.ID 
+                       WHERE $where_sql 
+                       ORDER BY $order_sql 
+                       LIMIT %d OFFSET %d";
+        
+        $query_params = array_merge($params, array($per_page, $offset));
+        $orders = $wpdb->get_results($wpdb->prepare($orders_sql, $query_params));
+
+        // Format response
+        $formatted_orders = array();
+        foreach ($orders as $order) {
+            $formatted_orders[] = array(
+                'id' => (int) $order->id,
+                'order_number' => $order->order_number,
+                'book_title' => $order->book_title,
+                'book_size' => $order->book_size,
+                'quantity' => (int) $order->quantity,
+                'total_price' => (float) $order->total_price,
+                'status' => $order->status,
+                'customer_name' => $order->customer_name,
+                'user_id' => (int) $order->user_id,
+                'created_at' => $order->created_at,
+            );
+        }
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'data' => array(
+                'orders' => $formatted_orders,
+                'total' => $total,
+                'total_pages' => ceil($total / $per_page),
+                'current_page' => $page,
+            )
+        ), 200);
+    }
+
+    /**
+     * REST API: Get order details for admin dashboard
+     *
+     * @param WP_REST_Request $request Request object
+     * @return WP_REST_Response Response object
+     */
+    public function rest_get_order_details($request) {
+        $order_id = (int) $request->get_param('order_id');
+
+        if ($order_id <= 0) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'message' => __('شناسه سفارش نامعتبر است', 'tabesh')
+            ), 400);
+        }
+
+        ob_start();
+        include TABESH_PLUGIN_DIR . 'templates/admin/partials/order-details-tabs.php';
+        $html = ob_get_clean();
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'data' => array(
+                'html' => $html
+            )
+        ), 200);
+    }
+
+    /**
+     * REST API: Update order details
+     *
+     * @param WP_REST_Request $request Request object
+     * @return WP_REST_Response Response object
+     */
+    public function rest_update_order($request) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'tabesh_orders';
+        
+        $order_id = (int) $request->get_param('order_id');
+        $params = $request->get_json_params();
+
+        if ($order_id <= 0) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'message' => __('شناسه سفارش نامعتبر است', 'tabesh')
+            ), 400);
+        }
+
+        // Get current order
+        $order = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM $table WHERE id = %d",
+            $order_id
+        ));
+
+        if (!$order) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'message' => __('سفارش یافت نشد', 'tabesh')
+            ), 404);
+        }
+
+        // Prepare update data - only update provided fields
+        $update_data = array();
+        $update_formats = array();
+
+        $allowed_fields = array(
+            'book_title' => '%s',
+            'book_size' => '%s',
+            'paper_type' => '%s',
+            'paper_weight' => '%s',
+            'page_count_color' => '%d',
+            'page_count_bw' => '%d',
+            'quantity' => '%d',
+            'total_price' => '%f',
+            'notes' => '%s',
+        );
+
+        foreach ($allowed_fields as $field => $format) {
+            if (isset($params[$field])) {
+                $value = $params[$field];
+                
+                // Sanitize based on field type
+                if ($format === '%s') {
+                    $update_data[$field] = sanitize_text_field($value);
+                } elseif ($format === '%d') {
+                    $update_data[$field] = intval($value);
+                } elseif ($format === '%f') {
+                    $update_data[$field] = floatval($value);
+                }
+                
+                $update_formats[] = $format;
+            }
+        }
+
+        // Add updated_at timestamp
+        $update_data['updated_at'] = current_time('mysql');
+        $update_formats[] = '%s';
+
+        // Calculate page_count_total if pages changed
+        if (isset($update_data['page_count_color']) || isset($update_data['page_count_bw'])) {
+            $color = isset($update_data['page_count_color']) ? $update_data['page_count_color'] : $order->page_count_color;
+            $bw = isset($update_data['page_count_bw']) ? $update_data['page_count_bw'] : $order->page_count_bw;
+            $update_data['page_count_total'] = $color + $bw;
+            $update_formats[] = '%d';
+        }
+
+        if (empty($update_data)) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'message' => __('هیچ داده‌ای برای به‌روزرسانی ارسال نشده', 'tabesh')
+            ), 400);
+        }
+
+        // Perform update
+        $result = $wpdb->update(
+            $table,
+            $update_data,
+            array('id' => $order_id),
+            $update_formats,
+            array('%d')
+        );
+
+        if ($result === false) {
+            return new WP_REST_Response(array(
+                'success' => false,
+                'message' => __('خطا در به‌روزرسانی سفارش', 'tabesh')
+            ), 500);
+        }
+
+        // Log the update
+        $logs_table = $wpdb->prefix . 'tabesh_logs';
+        $current_user = wp_get_current_user();
+        
+        $wpdb->insert(
+            $logs_table,
+            array(
+                'order_id' => $order_id,
+                'user_id' => $order->user_id,
+                'staff_user_id' => get_current_user_id(),
+                'action' => 'order_edit',
+                'description' => sprintf(
+                    __('سفارش توسط %s ویرایش شد', 'tabesh'),
+                    $current_user->display_name
+                )
+            ),
+            array('%d', '%d', '%d', '%s', '%s')
+        );
+
+        return new WP_REST_Response(array(
+            'success' => true,
+            'message' => __('اطلاعات سفارش با موفقیت به‌روزرسانی شد', 'tabesh')
+        ), 200);
+    }
+
+    /**
      * Save smart upload template settings (format field)
      *
      * @param array $format_data Format settings from POST data
