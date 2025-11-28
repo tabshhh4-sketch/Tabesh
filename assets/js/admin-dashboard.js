@@ -644,12 +644,16 @@
                             src: response.download_url
                         }).appendTo('body');
 
-                        // Cleanup iframe after download starts and re-enable button
+                        // Cleanup iframe and re-enable button after sufficient time for download to start
+                        // The timeout is set to 3 seconds to accommodate typical server response times
+                        // for initiating the download stream. The iframe is just a trigger - 
+                        // the actual download continues in the browser's download manager.
+                        const downloadInitTimeout = 3000;
                         setTimeout(() => {
                             $iframe.remove();
                             $btn.prop('disabled', false).html(originalText);
                             this.showToast('دانلود شروع شد', 'success');
-                        }, 2000);
+                        }, downloadInitTimeout);
                     } else {
                         $btn.prop('disabled', false).html(originalText);
                         this.showToast(response.message || 'خطا در ایجاد لینک دانلود', 'error');

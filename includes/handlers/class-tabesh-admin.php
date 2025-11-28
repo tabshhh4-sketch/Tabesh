@@ -996,10 +996,24 @@ class Tabesh_Admin {
         $all_allowed_fields = array_merge($billing_fields, $shipping_fields);
         $updated_fields = array();
 
+        // Fields that may contain multiple lines (addresses)
+        $textarea_fields = array(
+            'billing_address_1',
+            'billing_address_2',
+            'shipping_address_1',
+            'shipping_address_2'
+        );
+
         // Update user meta for each provided field
         foreach ($all_allowed_fields as $field) {
             if (isset($params[$field])) {
-                $value = sanitize_text_field($params[$field]);
+                // Use sanitize_textarea_field for address fields to preserve line breaks
+                // Use sanitize_text_field for other fields
+                if (in_array($field, $textarea_fields, true)) {
+                    $value = sanitize_textarea_field($params[$field]);
+                } else {
+                    $value = sanitize_text_field($params[$field]);
+                }
                 update_user_meta($user_id, $field, $value);
                 $updated_fields[] = $field;
             }
@@ -1012,7 +1026,7 @@ class Tabesh_Admin {
             ), 400);
         }
 
-        // Log the update
+        // Log the update (order_id is null since this is a customer profile update, not an order update)
         global $wpdb;
         $logs_table = $wpdb->prefix . 'tabesh_logs';
         $current_user = wp_get_current_user();
