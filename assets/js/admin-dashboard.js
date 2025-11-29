@@ -151,7 +151,6 @@
         initializeOrderTabs: function() {
             this.state.activeOrderTab = 'current';
             this.filterOrdersByTab('current');
-            this.updateTabCounts();
         },
 
         /**
@@ -287,8 +286,8 @@
             this.state.currentPage = 1;
 
             if (!query && !this.hasActiveFilters()) {
-                // No search query and no filters - re-apply tab filter instead of showing all
-                this.filterOrdersByTab(this.state.activeOrderTab);
+                // No search query and no filters - show all
+                this.$ordersBody.find('tr').show();
                 $('.search-results-info').removeClass('visible');
                 return;
             }
@@ -385,12 +384,8 @@
                 this.showNoResults();
             }
 
-            // Count visible rows after filtering
-            const visibleCount = this.$ordersBody.find('tr.order-row:visible').length;
-
-            this.updateSearchCount(data.total !== undefined ? data.total : visibleCount);
+            this.updateSearchCount(data.total || 0);
             this.updatePagination(data.total_pages || 1, data.current_page || 1);
-            this.handleNoOrdersMessage(visibleCount);
         },
 
         /**
@@ -399,24 +394,18 @@
         updateOrdersTable: function(orders) {
             // For now, just filter existing rows based on order IDs
             const orderIds = orders.map(o => o.id);
-            const activeTab = this.state.activeOrderTab;
             
             this.$ordersBody.find('tr.order-row').each(function() {
                 const $row = $(this);
                 const orderId = parseInt($row.data('order-id'));
-                const tabCategory = $row.data('tab-category') || '';
-                const categories = tabCategory.split(',').map(function(cat) { return cat.trim(); });
                 
-                // Check both: order is in search results AND belongs to active tab
-                if (orderIds.includes(orderId) && categories.includes(activeTab)) {
+                if (orderIds.includes(orderId)) {
                     $row.show();
                 } else {
                     $row.hide();
                     $row.next('.order-details-row').hide();
                 }
             });
-            
-            this.updateVisibleRowNumbers();
         },
 
         /**
