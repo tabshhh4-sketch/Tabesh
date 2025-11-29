@@ -245,6 +245,15 @@ $status_labels = array(
             <p><?php esc_html_e('هیچ فایلی برای این سفارش آپلود نشده است.', 'tabesh'); ?></p>
         </div>
     <?php else: ?>
+        <?php 
+        // Category labels for file numbering - defined outside the loop.
+        $category_labels_map = array(
+            'book_cover' => __('جلد', 'tabesh'),
+            'book_content' => __('متن', 'tabesh'),
+            'documents' => __('مدرک', 'tabesh'),
+            'other' => __('فایل', 'tabesh'),
+        );
+        ?>
         <?php foreach ($file_categories as $category_key => $category): ?>
             <?php if (!empty($category['files'])): ?>
                 <div class="file-category-section">
@@ -272,14 +281,7 @@ $status_labels = array(
                                 $file_size_display = number_format($file_size / 1024, 1) . ' KB';
                             }
                             
-                            // Category labels for file numbering
-                            $category_labels = array(
-                                'book_cover' => __('جلد', 'tabesh'),
-                                'book_content' => __('متن', 'tabesh'),
-                                'documents' => __('مدرک', 'tabesh'),
-                                'other' => __('فایل', 'tabesh'),
-                            );
-                            $category_label = isset($category_labels[$category_key]) ? $category_labels[$category_key] : __('فایل', 'tabesh');
+                            $category_label = isset($category_labels_map[$category_key]) ? $category_labels_map[$category_key] : __('فایل', 'tabesh');
                         ?>
                             <div class="file-card">
                                 <div class="file-icon"><?php echo $file_icon; ?></div>

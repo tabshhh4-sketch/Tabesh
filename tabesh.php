@@ -1173,7 +1173,7 @@ final class Tabesh {
     public function handle_file_download_request() {
         // Check if this is a download request.
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Token validation is done in serve_file_securely
-        if (!isset($_GET['tabesh_download']) || $_GET['tabesh_download'] !== '1') {
+        if (!isset($_GET['tabesh_download']) || intval($_GET['tabesh_download']) !== 1) {
             return;
         }
         
