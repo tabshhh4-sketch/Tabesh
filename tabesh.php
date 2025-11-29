@@ -256,6 +256,9 @@ final class Tabesh {
         // Enqueue scripts and styles
         add_action('wp_enqueue_scripts', array($this, 'enqueue_frontend_assets'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_assets'));
+        
+        // Handle file download requests
+        add_action('template_redirect', array($this, 'handle_file_download_request'));
     }
 
     /**
@@ -1157,6 +1160,42 @@ final class Tabesh {
             'download_url' => $download_url,
             'expires_at' => $result['expires_at']
         ), 200);
+    }
+
+    /**
+     * Handle file download requests via template_redirect
+     * 
+     * Intercepts requests with tabesh_download=1 parameter and serves the file
+     * securely using the Tabesh_File_Security class.
+     *
+     * @return void
+     */
+    public function handle_file_download_request() {
+        // Check if this is a download request.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Token validation is done in serve_file_securely
+        if (!isset($_GET['tabesh_download']) || intval($_GET['tabesh_download']) !== 1) {
+            return;
+        }
+        
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Token validation is done in serve_file_securely
+        $file_id = isset($_GET['file_id']) ? intval($_GET['file_id']) : 0;
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Token validation is done in serve_file_securely
+        $token = isset($_GET['token']) ? sanitize_text_field(wp_unslash($_GET['token'])) : '';
+        
+        if ($file_id <= 0 || empty($token)) {
+            wp_die(
+                esc_html__('پارامترهای نامعتبر', 'tabesh'),
+                esc_html__('خطا', 'tabesh'),
+                array('response' => 400)
+            );
+        }
+        
+        // Use file security class to serve the file
+        $file_security = new Tabesh_File_Security();
+        $file_security->serve_file_securely($file_id, $token);
+        
+        // serve_file_securely calls exit, but just in case
+        exit;
     }
 
     /**

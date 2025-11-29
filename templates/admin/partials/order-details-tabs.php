@@ -245,6 +245,15 @@ $status_labels = array(
             <p><?php esc_html_e('هیچ فایلی برای این سفارش آپلود نشده است.', 'tabesh'); ?></p>
         </div>
     <?php else: ?>
+        <?php 
+        // Category labels for file numbering - defined outside the loop.
+        $category_labels_map = array(
+            'book_cover' => __('جلد', 'tabesh'),
+            'book_content' => __('متن', 'tabesh'),
+            'documents' => __('مدرک', 'tabesh'),
+            'other' => __('فایل', 'tabesh'),
+        );
+        ?>
         <?php foreach ($file_categories as $category_key => $category): ?>
             <?php if (!empty($category['files'])): ?>
                 <div class="file-category-section">
@@ -254,7 +263,10 @@ $status_labels = array(
                         <span class="file-category-count">(<?php echo count($category['files']); ?> <?php esc_html_e('فایل', 'tabesh'); ?>)</span>
                     </div>
                     <div class="files-grid">
-                        <?php foreach ($category['files'] as $file): 
+                        <?php 
+                        $file_index = 0;
+                        foreach ($category['files'] as $file): 
+                            $file_index++;
                             $file_icon = '📄';
                             $mime_parts = explode('/', $file->mime_type);
                             $type = $mime_parts[0] ?? '';
@@ -268,10 +280,13 @@ $status_labels = array(
                             } else {
                                 $file_size_display = number_format($file_size / 1024, 1) . ' KB';
                             }
+                            
+                            $category_label = isset($category_labels_map[$category_key]) ? $category_labels_map[$category_key] : __('فایل', 'tabesh');
                         ?>
                             <div class="file-card">
                                 <div class="file-icon"><?php echo $file_icon; ?></div>
                                 <div class="file-info">
+                                    <div class="file-number"><?php echo esc_html($category_label . ' #' . $file_index); ?></div>
                                     <div class="file-name" title="<?php echo esc_attr($file->original_filename); ?>"><?php echo esc_html($file->original_filename); ?></div>
                                     <div class="file-meta">
                                         <?php echo esc_html($file_size_display); ?>
