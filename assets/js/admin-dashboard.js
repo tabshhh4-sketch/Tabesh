@@ -666,6 +666,47 @@
             if ($progressBar.length) {
                 $progressBar.css('width', progressMap[newStatus] + '%');
             }
+
+            // Update data-status attribute
+            $row.attr('data-status', newStatus);
+
+            // Update data-tab-category based on new status
+            let newTabCategory = 'current';
+            if (newStatus === 'cancelled') {
+                newTabCategory = 'cancelled';
+            } else if (newStatus === 'completed') {
+                newTabCategory = 'archived';
+            } else if (newStatus === 'processing') {
+                newTabCategory = 'processing,current';
+            }
+            $row.data('tab-category', newTabCategory).attr('data-tab-category', newTabCategory);
+
+            // Update tab counts and re-apply current tab filter
+            this.updateTabCounts();
+            this.filterOrdersByTab(this.state.activeOrderTab);
+        },
+
+        /**
+         * Update tab counts based on current order rows
+         */
+        updateTabCounts: function() {
+            const counts = { current: 0, processing: 0, archived: 0, cancelled: 0 };
+            
+            this.$ordersBody.find('tr.order-row').each(function() {
+                const categories = ($(this).data('tab-category') || '').split(',');
+                categories.forEach(function(cat) {
+                    cat = cat.trim();
+                    if (counts.hasOwnProperty(cat)) {
+                        counts[cat]++;
+                    }
+                });
+            });
+            
+            // Update tab count badges
+            $('.orders-tab').each(function() {
+                const tab = $(this).data('tab');
+                $(this).find('.tab-count').text(counts[tab] || 0);
+            });
         },
 
         /**
