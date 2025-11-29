@@ -149,8 +149,14 @@
          * Initialize order tabs - show only current orders by default
          */
         initializeOrderTabs: function() {
+            const self = this;
             this.state.activeOrderTab = 'current';
-            this.filterOrdersByTab('current');
+            
+            // Ensure DOM is ready before filtering
+            setTimeout(function() {
+                self.filterOrdersByTab('current');
+                self.updateTabCounts();
+            }, 0);
         },
 
         /**
@@ -286,8 +292,8 @@
             this.state.currentPage = 1;
 
             if (!query && !this.hasActiveFilters()) {
-                // No search query and no filters - show all
-                this.$ordersBody.find('tr').show();
+                // No search query and no filters - re-apply tab filter instead of showing all
+                this.filterOrdersByTab(this.state.activeOrderTab);
                 $('.search-results-info').removeClass('visible');
                 return;
             }
@@ -384,8 +390,12 @@
                 this.showNoResults();
             }
 
-            this.updateSearchCount(data.total || 0);
+            // Count visible rows after filtering
+            const visibleCount = this.$ordersBody.find('tr.order-row:visible').length;
+
+            this.updateSearchCount(data.total || visibleCount);
             this.updatePagination(data.total_pages || 1, data.current_page || 1);
+            this.handleNoOrdersMessage(visibleCount);
         },
 
         /**
@@ -394,18 +404,24 @@
         updateOrdersTable: function(orders) {
             // For now, just filter existing rows based on order IDs
             const orderIds = orders.map(o => o.id);
+            const activeTab = this.state.activeOrderTab;
             
             this.$ordersBody.find('tr.order-row').each(function() {
                 const $row = $(this);
                 const orderId = parseInt($row.data('order-id'));
+                const tabCategory = $row.data('tab-category') || '';
+                const categories = tabCategory.split(',').map(function(cat) { return cat.trim(); });
                 
-                if (orderIds.includes(orderId)) {
+                // Check both: order is in search results AND belongs to active tab
+                if (orderIds.includes(orderId) && categories.includes(activeTab)) {
                     $row.show();
                 } else {
                     $row.hide();
                     $row.next('.order-details-row').hide();
                 }
             });
+            
+            this.updateVisibleRowNumbers();
         },
 
         /**
