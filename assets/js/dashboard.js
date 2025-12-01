@@ -618,11 +618,9 @@
      * Open Upload Panel - Fixed Version with title update
      */
     function openUploadPanel(orderId) {
-        console.log('Opening upload panel for order:', orderId);
-        
         DashboardState.currentOrderId = orderId;
         
-        // Get order info from the clicked card
+        // Get order info from the clicked card - orderId comes from data attribute (safe)
         const $card = $(`.order-card[data-order-id="${orderId}"], .upload-order-card[data-order-id="${orderId}"]`);
         const orderTitle = $card.find('.order-book-title').text().replace('📖 ', '').trim();
         const orderNumber = $card.find('.order-number').text();
