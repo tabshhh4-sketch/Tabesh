@@ -34,7 +34,13 @@ $cover_paper_weights = is_array($cover_paper_weights) ? $cover_paper_weights : a
 $lamination_types = is_array($lamination_types) ? $lamination_types : array();
 $extras = is_array($extras) ? $extras : array();
 
-// Additional sanitization for extras - ensure all values are valid non-empty strings
+/**
+ * Sanitization for extras array.
+ * Filters out:
+ * - Non-scalar values (arrays, objects)
+ * - Empty strings and whitespace-only values
+ * - The string 'on' which can appear from malformed checkbox submissions
+ */
 $extras = array_filter(array_map(function($extra) {
     $extra = is_scalar($extra) ? trim(strval($extra)) : '';
     return (!empty($extra) && $extra !== 'on') ? $extra : null;

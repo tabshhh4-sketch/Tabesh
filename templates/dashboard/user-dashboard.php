@@ -19,8 +19,8 @@ $user_id = get_current_user_id();
 $user = wp_get_current_user();
 $summary = $this->get_user_summary();
 
-// Get default tab (determined by user state)
-$default_tab = isset($default_tab) ? $default_tab : 'order-form';
+// Get default tab (passed from render_dashboard method, fallback to order-form).
+$default_tab = isset( $default_tab ) ? $default_tab : 'order-form';
 ?>
 
 <div class="tabesh-dashboard" dir="rtl" data-theme="light" data-default-tab="<?php echo esc_attr($default_tab); ?>">
