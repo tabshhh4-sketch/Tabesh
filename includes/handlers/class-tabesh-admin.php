@@ -753,6 +753,45 @@ class Tabesh_Admin {
     }
 
     /**
+     * Check if a user has access to admin dashboard
+     * Always reads from database to prevent cache-related security issues
+     * 
+     * @param int $user_id User ID to check
+     * @return bool True if user has access, false otherwise
+     */
+    public function user_has_admin_dashboard_access($user_id) {
+        // Admins always have access
+        $user = get_userdata($user_id);
+        if (!$user) {
+            return false;
+        }
+        
+        if (user_can($user, 'manage_woocommerce')) {
+            return true;
+        }
+        
+        // Check allowed users list - read directly from database, no cache
+        global $wpdb;
+        $table = $wpdb->prefix . 'tabesh_settings';
+        
+        $allowed_users_json = $wpdb->get_var($wpdb->prepare(
+            "SELECT setting_value FROM $table WHERE setting_key = %s",
+            'admin_dashboard_allowed_users'
+        ));
+        
+        if ($allowed_users_json === null) {
+            return false;
+        }
+        
+        $allowed_users = json_decode($allowed_users_json, true);
+        if (!is_array($allowed_users)) {
+            return false;
+        }
+        
+        return in_array((int)$user_id, array_map('intval', $allowed_users), true);
+    }
+
+    /**
      * Render admin dashboard shortcode
      * 
      * Shows different content based on user role:
