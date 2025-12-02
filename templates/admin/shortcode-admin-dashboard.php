@@ -35,7 +35,7 @@ if (!$is_admin) {
     // Log to database for security audit
     global $wpdb;
     $logs_table = $wpdb->prefix . 'tabesh_logs';
-    $wpdb->insert(
+    $result = $wpdb->insert(
         $logs_table,
         array(
             'user_id' => $current_user_id,
@@ -44,6 +44,11 @@ if (!$is_admin) {
         ),
         array('%d', '%s', '%s')
     );
+    
+    // Log database errors
+    if ($result === false && defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('Tabesh Security: Failed to log unauthorized access attempt - ' . $wpdb->last_error);
+    }
 }
 
 if ($is_admin) {

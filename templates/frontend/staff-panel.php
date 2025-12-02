@@ -28,7 +28,7 @@ if (!$has_access) {
     // Log to database for security audit
     global $wpdb;
     $logs_table = $wpdb->prefix . 'tabesh_logs';
-    $wpdb->insert(
+    $result = $wpdb->insert(
         $logs_table,
         array(
             'user_id' => $current_user_id,
@@ -37,6 +37,11 @@ if (!$has_access) {
         ),
         array('%d', '%s', '%s')
     );
+    
+    // Log database errors
+    if ($result === false && defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('Tabesh Security: Failed to log unauthorized access attempt - ' . $wpdb->last_error);
+    }
     
     echo '<div class="tabesh-notice error" style="padding: 20px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 5px; color: #721c24; margin: 20px 0;">';
     echo '<p style="margin: 0;"><strong>' . esc_html__('دسترسی غیرمجاز', 'tabesh') . '</strong></p>';

@@ -278,6 +278,14 @@ class Tabesh_Staff {
             'staff_allowed_users'
         ));
         
+        // Check for database errors
+        if ($wpdb->last_error) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('Tabesh Security: Database error in user_has_staff_access_secure - ' . $wpdb->last_error);
+            }
+            return false;
+        }
+        
         if ($allowed_users_json === null) {
             return false;
         }
