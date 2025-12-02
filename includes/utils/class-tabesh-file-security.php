@@ -520,7 +520,8 @@ class Tabesh_File_Security {
         }
 
         // Sanitize filename to prevent header injection
-        $safe_filename = preg_replace('/[^a-zA-Z0-9\-\_\.\u0600-\u06FF]/', '_', $filename);
+        // Use /u modifier for proper Unicode support (Persian/Arabic characters)
+        $safe_filename = preg_replace('/[^a-zA-Z0-9\-\_\.\x{0600}-\x{06FF}]/u', '_', $filename);
         
         // Set CORS headers for same-origin and authenticated requests
         header('Access-Control-Allow-Origin: ' . get_site_url());

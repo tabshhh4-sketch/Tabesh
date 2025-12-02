@@ -654,9 +654,16 @@
                                 let filename = 'tabesh-download';
                                 
                                 if (contentDisposition) {
-                                    const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
-                                    if (filenameMatch && filenameMatch[1]) {
-                                        filename = filenameMatch[1].replace(/['"]/g, '');
+                                    // Try RFC 5987 encoded filename* first (e.g., filename*=UTF-8''encoded-name)
+                                    const filenameStarMatch = contentDisposition.match(/filename\*=UTF-8''([^;,\n]*)/i);
+                                    if (filenameStarMatch && filenameStarMatch[1]) {
+                                        filename = decodeURIComponent(filenameStarMatch[1]);
+                                    } else {
+                                        // Fallback to regular filename parameter
+                                        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                                        if (filenameMatch && filenameMatch[1]) {
+                                            filename = filenameMatch[1].replace(/['"]/g, '');
+                                        }
                                     }
                                 }
                                 
@@ -704,9 +711,10 @@
                                     iframe.src = response.download_url;
                                     document.body.appendChild(iframe);
                                     
+                                    // Clean up iframe after 2 seconds (sufficient for download to start)
                                     setTimeout(() => {
                                         document.body.removeChild(iframe);
-                                    }, 5000);
+                                    }, 2000);
                                     
                                     $btn.prop('disabled', false).html(originalText);
                                     this.showToast('دانلود شروع شد', 'success');

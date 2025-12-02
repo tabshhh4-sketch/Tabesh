@@ -413,11 +413,12 @@ class Tabesh_SMS {
 
         // Final validation
         if (empty($phone) || !$this->validate_phone($phone)) {
-            $this->log_error('no_phone', __('شماره موبایل مشتری یافت نشد یا نامعتبر است', 'tabesh'), array(
+            $error_message = __('شماره موبایل مشتری یافت نشد یا نامعتبر است', 'tabesh');
+            $this->log_error('no_phone', $error_message, array(
                 'order_id' => $order_id,
                 'user_id' => $order->user_id,
             ));
-            return new WP_Error('no_phone', __('شماره موبایل مشتری یافت نشد یا نامعتبر است', 'tabesh'));
+            return new WP_Error('no_phone', $error_message);
         }
 
         // Get order variables for template
