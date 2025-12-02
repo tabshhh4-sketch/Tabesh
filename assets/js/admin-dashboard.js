@@ -659,7 +659,7 @@
                                 // Extract filename from Content-Disposition header or URL
                                 const urlParams = new URLSearchParams(new URL(response.download_url).search);
                                 const fileId = urlParams.get('file_id');
-                                a.download = `file-${fileId}`;
+                                a.download = fileId ? `file-${fileId}` : 'download';
                                 
                                 document.body.appendChild(a);
                                 a.click();

@@ -174,11 +174,16 @@ class Tabesh_SMS {
             return new WP_Error('pattern_missing', __('کد الگوی پیامک تعریف نشده', 'tabesh'));
         }
 
-        // Validate pattern code is numeric
-        $bodyId = intval($pattern_code);
-        if ($bodyId <= 0) {
+        // Validate pattern code is numeric before converting
+        if (!is_numeric($pattern_code)) {
             $this->log_error('invalid_pattern', __('کد الگوی پیامک باید عددی باشد', 'tabesh'));
             return new WP_Error('invalid_pattern', __('کد الگوی پیامک باید عددی باشد', 'tabesh'));
+        }
+        
+        $bodyId = intval($pattern_code);
+        if ($bodyId <= 0) {
+            $this->log_error('invalid_pattern', __('کد الگوی پیامک باید عدد مثبت باشد', 'tabesh'));
+            return new WP_Error('invalid_pattern', __('کد الگوی پیامک باید عدد مثبت باشد', 'tabesh'));
         }
 
         try {
@@ -188,7 +193,8 @@ class Tabesh_SMS {
                 'trace' => true,
                 'exceptions' => true,
                 'connection_timeout' => 30,
-                'cache_wsdl' => WSDL_CACHE_NONE, // Disable WSDL caching in development
+                // Disable WSDL caching only in development mode for easier debugging
+                'cache_wsdl' => (defined('WP_DEBUG') && WP_DEBUG) ? WSDL_CACHE_NONE : WSDL_CACHE_BOTH,
             );
 
             // Create SOAP client
