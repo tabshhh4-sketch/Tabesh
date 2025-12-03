@@ -54,12 +54,18 @@ class Tabesh_Admin_Order_Creator {
 	 * Actually enqueue the assets (separated for reusability)
 	 */
 	private function do_enqueue_assets() {
+		// Get file modification times for cache busting
+		$css_file = TABESH_PLUGIN_DIR . 'assets/css/admin-order-creator.css';
+		$js_file  = TABESH_PLUGIN_DIR . 'assets/js/admin-order-creator.js';
+		$css_ver  = file_exists( $css_file ) ? filemtime( $css_file ) : TABESH_VERSION;
+		$js_ver   = file_exists( $js_file ) ? filemtime( $js_file ) : TABESH_VERSION;
+
 		// Enqueue CSS with cache bust
 		wp_enqueue_style(
 			'tabesh-admin-order-creator',
 			TABESH_PLUGIN_URL . 'assets/css/admin-order-creator.css',
 			array(),
-			TABESH_VERSION . '.' . time()
+			$css_ver
 		);
 
 		// Enqueue JS
@@ -67,7 +73,7 @@ class Tabesh_Admin_Order_Creator {
 			'tabesh-admin-order-creator',
 			TABESH_PLUGIN_URL . 'assets/js/admin-order-creator.js',
 			array( 'jquery' ),
-			TABESH_VERSION . '.' . time(),
+			$js_ver,
 			true
 		);
 

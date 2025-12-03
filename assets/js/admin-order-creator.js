@@ -515,7 +515,6 @@
         for (let field of baseRequired) {
             const value = $('#' + field).val();
             if (!value || value.trim() === '') {
-                console.log('Missing field: ' + field);
                 return false;
             }
         }
