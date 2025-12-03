@@ -168,7 +168,11 @@ if ( $is_admin ) {
 				<button class="header-btn theme-toggle-btn" aria-label="<?php esc_attr_e( 'تغییر تم', 'tabesh' ); ?>">
 					🌙 <span><?php esc_html_e( 'حالت تاریک', 'tabesh' ); ?></span>
 				</button>
-				<?php Tabesh()->admin_order_creator->render_new_order_button(); ?>
+				<?php
+				if ( isset( Tabesh()->admin_order_creator ) && method_exists( Tabesh()->admin_order_creator, 'render_new_order_button' ) ) {
+					Tabesh()->admin_order_creator->render_new_order_button();
+				}
+				?>
 				<a href="<?php echo esc_url( admin_url( 'admin.php?page=tabesh-settings' ) ); ?>" class="header-btn">
 					⚙️ <span><?php esc_html_e( 'تنظیمات', 'tabesh' ); ?></span>
 				</a>
@@ -381,8 +385,10 @@ if ( $is_admin ) {
 		</div>
 
 		<?php
-		// Render admin order creator modal
-		Tabesh()->admin_order_creator->render_order_modal();
+		// Render admin order creator modal.
+		if ( isset( Tabesh()->admin_order_creator ) && method_exists( Tabesh()->admin_order_creator, 'render_order_modal' ) ) {
+			Tabesh()->admin_order_creator->render_order_modal();
+		}
 		?>
 	</div>
 
