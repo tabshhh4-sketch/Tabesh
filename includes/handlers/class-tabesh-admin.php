@@ -1211,12 +1211,6 @@ class Tabesh_Admin {
     }
 
     /**
-     * Save smart upload template settings (format field)
-     *
-     * @param array $format_data Format settings from POST data
-     */
-
-    /**
      * Normalize Iranian mobile number to standard format
      * Detects and converts various Iranian mobile formats to 09xxxxxxxxx
      *

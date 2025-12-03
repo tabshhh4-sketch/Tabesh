@@ -65,7 +65,12 @@ if ($user) {
         $customer_state,
         $customer_postcode
     ));
-    $customer_full_address = implode('، ', $address_parts);
+    // Persian comma separator for address parts
+    $customer_full_address = implode(
+        /* translators: separator for address parts */
+        _x('، ', 'address separator', 'tabesh'),
+        $address_parts
+    );
 }
 
 // Shipping address fields
