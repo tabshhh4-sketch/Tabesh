@@ -381,8 +381,7 @@
     background-color: rgba(0, 0, 0, 0.6);
 }
 
-/* Exclude #tabesh-order-modal from generic styles - it has its own specific styles */
-.tabesh-modal-content:not(#tabesh-order-modal *) {
+.tabesh-modal-content {
     background-color: #fff;
     margin: 5% auto;
     padding: 30px;
@@ -404,8 +403,7 @@
     }
 }
 
-/* Exclude #tabesh-order-modal from generic styles */
-.tabesh-modal-close:not(#tabesh-order-modal *) {
+.tabesh-modal-close {
     color: #aaa;
     float: left;
     font-size: 28px;
@@ -414,8 +412,8 @@
     line-height: 20px;
 }
 
-.tabesh-modal-close:not(#tabesh-order-modal *):hover,
-.tabesh-modal-close:not(#tabesh-order-modal *):focus {
+.tabesh-modal-close:hover,
+.tabesh-modal-close:focus {
     color: #000;
 }
 
@@ -462,8 +460,7 @@
         grid-template-columns: 1fr;
     }
 
-    /* Exclude #tabesh-order-modal from generic styles */
-    .tabesh-modal-content:not(#tabesh-order-modal *) {
+    .tabesh-modal-content {
         width: 95%;
         margin: 10% auto;
         padding: 20px;
@@ -513,8 +510,8 @@
     flex-wrap: wrap;
 }
 
-/* Modal Styles - Exclude #tabesh-order-modal which has its own specific styles */
-.tabesh-modal:not(#tabesh-order-modal) {
+/* Modal Styles */
+.tabesh-modal {
     display: none; /* Hidden by default */
     position: fixed;
     top: 0;
@@ -528,14 +525,13 @@
     transition: opacity 0.3s ease;
 }
 
-/* Show modal when .show class is added - Exclude #tabesh-order-modal */
-.tabesh-modal.show:not(#tabesh-order-modal) {
+/* Show modal when .show class is added */
+.tabesh-modal.show {
     display: flex;
     opacity: 1;
 }
 
-/* Exclude #tabesh-order-modal from generic styles */
-.tabesh-modal-overlay:not(#tabesh-order-modal *) {
+.tabesh-modal-overlay {
     position: absolute;
     top: 0;
     left: 0;
@@ -545,7 +541,7 @@
     animation: fadeIn 0.3s ease;
 }
 
-.tabesh-modal-dialog:not(#tabesh-order-modal *) {
+.tabesh-modal-dialog {
     position: relative;
     max-width: 500px;
     width: 90%;
@@ -555,19 +551,17 @@
     animation: slideIn 0.3s ease;
 }
 
-.tabesh-modal-dialog.tabesh-modal-large:not(#tabesh-order-modal *) {
+.tabesh-modal-dialog.tabesh-modal-large {
     max-width: 700px;
 }
 
-/* Exclude #tabesh-order-modal from generic styles */
-.tabesh-modal-content:not(#tabesh-order-modal *) {
+.tabesh-modal-content {
     background: #fff;
     border-radius: 6px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Exclude #tabesh-order-modal from generic styles */
-.tabesh-modal-header:not(#tabesh-order-modal *) {
+.tabesh-modal-header {
     padding: 20px;
     border-bottom: 1px solid #ddd;
     display: flex;
@@ -575,13 +569,13 @@
     align-items: center;
 }
 
-.tabesh-modal-header:not(#tabesh-order-modal *) h3 {
+.tabesh-modal-header h3 {
     margin: 0;
     font-size: 18px;
     color: #23282d;
 }
 
-.tabesh-modal-close:not(#tabesh-order-modal *) {
+.tabesh-modal-close {
     background: none;
     border: none;
     cursor: pointer;
@@ -590,23 +584,23 @@
     transition: color 0.2s ease;
 }
 
-.tabesh-modal-close:not(#tabesh-order-modal *):hover {
+.tabesh-modal-close:hover {
     color: #000;
 }
 
-.tabesh-modal-close:not(#tabesh-order-modal *) .dashicons {
+.tabesh-modal-close .dashicons {
     font-size: 24px;
     width: 24px;
     height: 24px;
 }
 
-.tabesh-modal-body:not(#tabesh-order-modal *) {
+.tabesh-modal-body {
     padding: 20px;
     max-height: 60vh;
     overflow-y: auto;
 }
 
-.tabesh-modal-footer:not(#tabesh-order-modal *) {
+.tabesh-modal-footer {
     padding: 20px;
     border-top: 1px solid #ddd;
     text-align: left;
@@ -696,12 +690,12 @@
     .nav-tab-wrapper,
     .tabesh-filter-bar,
     .button,
-    .tabesh-modal-close:not(#tabesh-order-modal *),
-    .tabesh-modal:not(#tabesh-order-modal) {
+    .tabesh-modal-close,
+    .tabesh-modal {
         display: none !important;
     }
 
-    .tabesh-modal-content:not(#tabesh-order-modal *) {
+    .tabesh-modal-content {
         box-shadow: none;
         border: 1px solid #000;
     }
