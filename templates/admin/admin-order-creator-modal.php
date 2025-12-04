@@ -108,124 +108,130 @@ $quantity_step = Tabesh()->get_setting('quantity_step', 10);
                 <div class="tabesh-form-section">
                     <h3><?php echo esc_html__('مشخصات سفارش', 'tabesh'); ?></h3>
 
-                    <!-- Book Title -->
-                    <div class="tabesh-form-group">
-                        <label for="book_title"><?php echo esc_html__('عنوان کتاب:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <input type="text" id="book_title" name="book_title" class="tabesh-input" required>
-                    </div>
+                    <div class="tabesh-form-grid-2">
+                        <!-- Book Title -->
+                        <div class="tabesh-form-group tabesh-form-full">
+                            <label for="book_title"><?php echo esc_html__('عنوان کتاب:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <input type="text" id="book_title" name="book_title" class="tabesh-input" required>
+                        </div>
 
-                    <!-- Book Size -->
-                    <div class="tabesh-form-group">
-                        <label for="book_size"><?php echo esc_html__('قطع کتاب:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <select id="book_size" name="book_size" class="tabesh-select" required>
-                            <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
-                            <?php foreach ($book_sizes as $size): ?>
-                                <option value="<?php echo esc_attr($size); ?>"><?php echo esc_html($size); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                        <!-- Book Size -->
+                        <div class="tabesh-form-group">
+                            <label for="book_size"><?php echo esc_html__('قطع کتاب:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <select id="book_size" name="book_size" class="tabesh-select" required>
+                                <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
+                                <?php foreach ($book_sizes as $size): ?>
+                                    <option value="<?php echo esc_attr($size); ?>"><?php echo esc_html($size); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <!-- Paper Type -->
-                    <div class="tabesh-form-group">
-                        <label for="paper_type"><?php echo esc_html__('نوع کاغذ:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <select id="paper_type" name="paper_type" class="tabesh-select" required>
-                            <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
-                            <?php foreach ($paper_types as $type => $weights): ?>
-                                <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                        <!-- Paper Type -->
+                        <div class="tabesh-form-group">
+                            <label for="paper_type"><?php echo esc_html__('نوع کاغذ:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <select id="paper_type" name="paper_type" class="tabesh-select" required>
+                                <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
+                                <?php foreach ($paper_types as $type => $weights): ?>
+                                    <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <!-- Paper Weight -->
-                    <div class="tabesh-form-group">
-                        <label for="paper_weight"><?php echo esc_html__('گرماژ کاغذ:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <select id="paper_weight" name="paper_weight" class="tabesh-select" required>
-                            <option value=""><?php echo esc_html__('ابتدا نوع کاغذ را انتخاب کنید', 'tabesh'); ?></option>
-                        </select>
-                    </div>
+                        <!-- Paper Weight -->
+                        <div class="tabesh-form-group">
+                            <label for="paper_weight"><?php echo esc_html__('گرماژ کاغذ:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <select id="paper_weight" name="paper_weight" class="tabesh-select" required>
+                                <option value=""><?php echo esc_html__('ابتدا نوع کاغذ را انتخاب کنید', 'tabesh'); ?></option>
+                            </select>
+                        </div>
 
-                    <!-- Print Type -->
-                    <div class="tabesh-form-group">
-                        <label for="print_type"><?php echo esc_html__('نوع چاپ:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <select id="print_type" name="print_type" class="tabesh-select" required>
-                            <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
-                            <?php foreach ($print_types as $type): ?>
-                                <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <!-- Print Type -->
+                        <div class="tabesh-form-group">
+                            <label for="print_type"><?php echo esc_html__('نوع چاپ:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <select id="print_type" name="print_type" class="tabesh-select" required>
+                                <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
+                                <?php foreach ($print_types as $type): ?>
+                                    <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Page Count (conditional based on print type) -->
-                    <div class="tabesh-form-group" id="page-count-color-group" style="display: none;">
-                        <label for="page_count_color"><?php echo esc_html__('تعداد صفحات رنگی:', 'tabesh'); ?></label>
-                        <input type="number" id="page_count_color" name="page_count_color" class="tabesh-input" min="0" value="0">
+                    <div class="tabesh-form-grid-3" style="margin-top: 20px;">
+                        <div class="tabesh-form-group" id="page-count-color-group" style="display: none;">
+                            <label for="page_count_color"><?php echo esc_html__('تعداد صفحات رنگی:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <input type="number" id="page_count_color" name="page_count_color" class="tabesh-input" min="0" value="0">
+                        </div>
+
+                        <div class="tabesh-form-group" id="page-count-bw-group" style="display: none;">
+                            <label for="page_count_bw"><?php echo esc_html__('تعداد صفحات سیاه و سفید:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <input type="number" id="page_count_bw" name="page_count_bw" class="tabesh-input" min="0" value="0">
+                        </div>
+
+                        <div class="tabesh-form-group" id="page-count-total-group">
+                            <label for="page_count_total"><?php echo esc_html__('تعداد کل صفحات:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <input type="number" id="page_count_total" name="page_count_total" class="tabesh-input" min="1">
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="tabesh-form-group">
+                            <label for="quantity"><?php echo esc_html__('تیراژ:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <input type="number" id="quantity" name="quantity" class="tabesh-input" 
+                                   min="<?php echo esc_attr($min_quantity); ?>" 
+                                   max="<?php echo esc_attr($max_quantity); ?>" 
+                                   step="<?php echo esc_attr($quantity_step); ?>" 
+                                   value="<?php echo esc_attr($min_quantity); ?>" required>
+                        </div>
                     </div>
 
-                    <div class="tabesh-form-group" id="page-count-bw-group" style="display: none;">
-                        <label for="page_count_bw"><?php echo esc_html__('تعداد صفحات سیاه و سفید:', 'tabesh'); ?></label>
-                        <input type="number" id="page_count_bw" name="page_count_bw" class="tabesh-input" min="0" value="0">
-                    </div>
+                    <div class="tabesh-form-grid-2" style="margin-top: 20px;">
+                        <!-- Binding Type -->
+                        <div class="tabesh-form-group">
+                            <label for="binding_type"><?php echo esc_html__('نوع صحافی:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <select id="binding_type" name="binding_type" class="tabesh-select" required>
+                                <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
+                                <?php foreach ($binding_types as $type): ?>
+                                    <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <div class="tabesh-form-group" id="page-count-total-group">
-                        <label for="page_count_total"><?php echo esc_html__('تعداد کل صفحات:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <input type="number" id="page_count_total" name="page_count_total" class="tabesh-input" min="1" required>
-                    </div>
+                        <!-- License Type -->
+                        <div class="tabesh-form-group">
+                            <label for="license_type"><?php echo esc_html__('نوع مجوز:', 'tabesh'); ?> <span class="required">*</span></label>
+                            <select id="license_type" name="license_type" class="tabesh-select" required>
+                                <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
+                                <?php foreach ($license_types as $type): ?>
+                                    <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <!-- Quantity -->
-                    <div class="tabesh-form-group">
-                        <label for="quantity"><?php echo esc_html__('تیراژ:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <input type="number" id="quantity" name="quantity" class="tabesh-input" 
-                               min="<?php echo esc_attr($min_quantity); ?>" 
-                               max="<?php echo esc_attr($max_quantity); ?>" 
-                               step="<?php echo esc_attr($quantity_step); ?>" 
-                               value="<?php echo esc_attr($min_quantity); ?>" required>
-                    </div>
+                        <!-- Cover Paper Weight -->
+                        <div class="tabesh-form-group">
+                            <label for="cover_paper_weight"><?php echo esc_html__('گرماژ کاغذ جلد:', 'tabesh'); ?></label>
+                            <select id="cover_paper_weight" name="cover_paper_weight" class="tabesh-select">
+                                <?php foreach ($cover_paper_weights as $weight): ?>
+                                    <option value="<?php echo esc_attr($weight); ?>"><?php echo esc_html($weight); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                    <!-- Binding Type -->
-                    <div class="tabesh-form-group">
-                        <label for="binding_type"><?php echo esc_html__('نوع صحافی:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <select id="binding_type" name="binding_type" class="tabesh-select" required>
-                            <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
-                            <?php foreach ($binding_types as $type): ?>
-                                <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <!-- License Type -->
-                    <div class="tabesh-form-group">
-                        <label for="license_type"><?php echo esc_html__('نوع مجوز:', 'tabesh'); ?> <span class="required">*</span></label>
-                        <select id="license_type" name="license_type" class="tabesh-select" required>
-                            <option value=""><?php echo esc_html__('انتخاب کنید...', 'tabesh'); ?></option>
-                            <?php foreach ($license_types as $type): ?>
-                                <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <!-- Cover Paper Weight -->
-                    <div class="tabesh-form-group">
-                        <label for="cover_paper_weight"><?php echo esc_html__('گرماژ کاغذ جلد:', 'tabesh'); ?></label>
-                        <select id="cover_paper_weight" name="cover_paper_weight" class="tabesh-select">
-                            <?php foreach ($cover_paper_weights as $weight): ?>
-                                <option value="<?php echo esc_attr($weight); ?>"><?php echo esc_html($weight); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <!-- Lamination Type -->
-                    <div class="tabesh-form-group">
-                        <label for="lamination_type"><?php echo esc_html__('نوع سلفون:', 'tabesh'); ?></label>
-                        <select id="lamination_type" name="lamination_type" class="tabesh-select">
-                            <?php foreach ($lamination_types as $type): ?>
-                                <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                        <!-- Lamination Type -->
+                        <div class="tabesh-form-group">
+                            <label for="lamination_type"><?php echo esc_html__('نوع سلفون:', 'tabesh'); ?></label>
+                            <select id="lamination_type" name="lamination_type" class="tabesh-select">
+                                <?php foreach ($lamination_types as $type): ?>
+                                    <option value="<?php echo esc_attr($type); ?>"><?php echo esc_html($type); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Extras -->
                     <?php if (!empty($extras)): ?>
-                    <div class="tabesh-form-group">
+                    <div class="tabesh-form-group" style="margin-top: 20px;">
                         <label><?php echo esc_html__('آپشن‌های اضافی:', 'tabesh'); ?></label>
                         <div class="tabesh-checkbox-group">
                             <?php foreach ($extras as $extra): ?>
@@ -239,7 +245,7 @@ $quantity_step = Tabesh()->get_setting('quantity_step', 10);
                     <?php endif; ?>
 
                     <!-- Notes -->
-                    <div class="tabesh-form-group">
+                    <div class="tabesh-form-group tabesh-form-full" style="margin-top: 20px;">
                         <label for="notes"><?php echo esc_html__('یادداشت:', 'tabesh'); ?></label>
                         <textarea id="notes" name="notes" class="tabesh-textarea" rows="3"></textarea>
                     </div>
