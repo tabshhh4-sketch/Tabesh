@@ -128,19 +128,35 @@
                 $('#page-count-bw-group').hide();
                 $('#page-count-total-group').hide();
                 $('#page_count_bw').val(0);
+                // Enable/disable required attribute
+                $('#page_count_color').prop('required', true);
+                $('#page_count_bw').prop('required', false);
+                $('#page_count_total').prop('required', false);
             } else if (printType === 'سیاه و سفید') {
                 $('#page-count-color-group').hide();
                 $('#page-count-bw-group').show();
                 $('#page-count-total-group').hide();
                 $('#page_count_color').val(0);
+                // Enable/disable required attribute
+                $('#page_count_color').prop('required', false);
+                $('#page_count_bw').prop('required', true);
+                $('#page_count_total').prop('required', false);
             } else if (printType === 'ترکیبی') {
                 $('#page-count-color-group').show();
                 $('#page-count-bw-group').show();
                 $('#page-count-total-group').hide();
+                // Enable/disable required attribute
+                $('#page_count_color').prop('required', true);
+                $('#page_count_bw').prop('required', true);
+                $('#page_count_total').prop('required', false);
             } else {
                 $('#page-count-color-group').hide();
                 $('#page-count-bw-group').hide();
                 $('#page-count-total-group').show();
+                // Enable/disable required attribute
+                $('#page_count_color').prop('required', false);
+                $('#page_count_bw').prop('required', false);
+                $('#page_count_total').prop('required', true);
             }
         });
 
@@ -507,6 +523,31 @@
         for (let field of required) {
             const value = $('#' + field).val();
             if (!value || value.trim() === '') {
+                return false;
+            }
+        }
+
+        // Validate page counts based on print type
+        const printType = $('#print_type').val();
+        if (printType === 'رنگی') {
+            const pageCountColor = parseInt($('#page_count_color').val()) || 0;
+            if (pageCountColor <= 0) {
+                return false;
+            }
+        } else if (printType === 'سیاه و سفید') {
+            const pageCountBw = parseInt($('#page_count_bw').val()) || 0;
+            if (pageCountBw <= 0) {
+                return false;
+            }
+        } else if (printType === 'ترکیبی') {
+            const pageCountColor = parseInt($('#page_count_color').val()) || 0;
+            const pageCountBw = parseInt($('#page_count_bw').val()) || 0;
+            if (pageCountColor <= 0 && pageCountBw <= 0) {
+                return false;
+            }
+        } else {
+            const total = parseInt($('#page_count_total').val()) || 0;
+            if (total <= 0) {
                 return false;
             }
         }
