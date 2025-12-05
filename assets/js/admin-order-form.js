@@ -286,7 +286,7 @@
         const $weightSelect = $('#aof-paper-weight');
         
         $weightSelect.empty().append('<option value="">' + 
-            (paperType ? 'انتخاب کنید...' : 'ابتدا نوع کاغذ را انتخاب کنید') + 
+            (paperType ? tabeshAdminOrderForm.strings.selectOption : tabeshAdminOrderForm.strings.selectPaperFirst) + 
         '</option>');
         
         if (paperType && tabeshAdminOrderForm.settings && 
@@ -405,7 +405,7 @@
             complete: function() {
                 $btn.prop('disabled', false).html(
                     '<span class="dashicons dashicons-calculator"></span> ' +
-                    'محاسبه قیمت'
+                    tabeshAdminOrderForm.strings.calculatePrice
                 );
             }
         });
@@ -525,7 +525,7 @@
             complete: function() {
                 $btn.prop('disabled', false).html(
                     '<span class="dashicons dashicons-yes-alt"></span> ' +
-                    'ثبت سفارش'
+                    tabeshAdminOrderForm.strings.submitOrder
                 );
             }
         });
@@ -615,6 +615,20 @@
             extras.push($(this).val());
         });
 
+        // Get default cover paper weight from settings
+        // دریافت گرماژ پیش‌فرض کاغذ جلد از تنظیمات
+        const defaultCoverWeight = (tabeshAdminOrderForm.settings.coverPaperWeights && 
+            tabeshAdminOrderForm.settings.coverPaperWeights.length > 0) 
+            ? tabeshAdminOrderForm.settings.coverPaperWeights[0] 
+            : '250';
+        
+        // Get default lamination type from settings
+        // دریافت نوع سلفون پیش‌فرض از تنظیمات
+        const defaultLamination = (tabeshAdminOrderForm.settings.laminationTypes && 
+            tabeshAdminOrderForm.settings.laminationTypes.length > 0) 
+            ? tabeshAdminOrderForm.settings.laminationTypes[0] 
+            : '';
+
         return {
             book_title: $('#aof-book-title').val().trim(),
             book_size: $('#aof-book-size').val(),
@@ -626,8 +640,8 @@
             quantity: parseInt($('#aof-quantity').val()) || 0,
             binding_type: $('#aof-binding-type').val(),
             license_type: $('#aof-license-type').val(),
-            cover_paper_weight: $('#aof-cover-paper-weight').val() || '250',
-            lamination_type: $('#aof-lamination-type').val() || 'براق',
+            cover_paper_weight: $('#aof-cover-paper-weight').val() || defaultCoverWeight,
+            lamination_type: $('#aof-lamination-type').val() || defaultLamination,
             extras: extras,
             notes: $('#aof-notes').val().trim()
         };
@@ -656,7 +670,7 @@
         $('#aof-page-count-total-group').show();
         
         // Reset paper weight / بازنشانی گرماژ کاغذ
-        $('#aof-paper-weight').empty().append('<option value="">ابتدا نوع کاغذ را انتخاب کنید</option>');
+        $('#aof-paper-weight').empty().append('<option value="">' + tabeshAdminOrderForm.strings.selectPaperFirst + '</option>');
     }
 
     /**

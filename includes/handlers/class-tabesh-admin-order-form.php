@@ -167,6 +167,10 @@ class Tabesh_Admin_Order_Form {
                 'userCreated' => __('کاربر با موفقیت ایجاد شد', 'tabesh'),
                 'searching' => __('در حال جستجو...', 'tabesh'),
                 'searchError' => __('خطا در جستجو', 'tabesh'),
+                'calculatePrice' => __('محاسبه قیمت', 'tabesh'),
+                'submitOrder' => __('ثبت سفارش', 'tabesh'),
+                'selectPaperFirst' => __('ابتدا نوع کاغذ را انتخاب کنید', 'tabesh'),
+                'selectOption' => __('انتخاب کنید...', 'tabesh'),
             )
         ));
     }
