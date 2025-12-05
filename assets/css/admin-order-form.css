@@ -57,7 +57,7 @@
 
 /* Container - wider for horizontal layout / کانتینر - عریض‌تر برای چیدمان افقی */
 .tabesh-aof-container {
-    max-width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
     background: var(--aof-bg-secondary);
     border-radius: var(--aof-radius-md);
@@ -162,10 +162,14 @@
    Horizontal inline form layout / چیدمان خطی افقی فرم
    ========================================================================== */
 
-/* Form row - horizontal multi-column grid / ردیف فرم - گرید چند ستونی افقی */
+/* 
+   Form row - responsive multi-column grid / ردیف فرم - گرید چند ستونی واکنش‌گرا
+   Uses auto-fit with minmax for flexible column sizing
+   از auto-fit با minmax برای اندازه‌بندی انعطاف‌پذیر ستون‌ها استفاده می‌شود
+*/
 .tabesh-aof-form-row {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 10px;
     margin-bottom: 10px;
     align-items: end;
@@ -721,9 +725,14 @@
 /* ==========================================================================
    Responsive Design / طراحی واکنش‌گرا
    Media queries for all device sizes / کوئری‌های رسانه‌ای برای تمام اندازه‌های دستگاه
+   
+   Note: Base grid uses auto-fit with minmax for flexible columns.
+   Media queries override for specific column counts at breakpoints.
+   نکته: گرید پایه از auto-fit با minmax برای ستون‌های انعطاف‌پذیر استفاده می‌کند.
+   کوئری‌های رسانه‌ای تعداد ستون مشخص را در نقاط شکست تعیین می‌کنند.
    ========================================================================== */
 
-/* Large Desktop (1200px+) - 6 columns / دسکتاپ بزرگ - ۶ ستون */
+/* Large Desktop (1200px+) - 6 columns max / دسکتاپ بزرگ - حداکثر ۶ ستون */
 @media (min-width: 1200px) {
     .tabesh-aof-form-row {
         grid-template-columns: repeat(6, 1fr);

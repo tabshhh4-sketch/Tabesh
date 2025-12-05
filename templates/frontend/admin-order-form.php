@@ -228,7 +228,7 @@ $form_title = isset($atts['title']) ? $atts['title'] : __('ثبت سفارش ج�
                             <span class="required">*</span>
                         </label>
                         <select id="aof-paper-weight" name="paper_weight" class="tabesh-aof-select" required>
-                            <option value=""><?php echo esc_html__('ابتدا نوع کاغذ', 'tabesh'); ?></option>
+                            <option value=""><?php echo esc_html__('انتخاب گرماژ...', 'tabesh'); ?></option>
                         </select>
                     </div>
 
@@ -298,7 +298,7 @@ $form_title = isset($atts['title']) ? $atts['title'] : __('ثبت سفارش ج�
 
                     <div class="tabesh-aof-form-group" id="aof-page-count-bw-group" style="display: none;">
                         <label for="aof-page-count-bw">
-                            <?php echo esc_html__('صفحات سیاه‌سفید:', 'tabesh'); ?>
+                            <?php echo esc_html__('صفحات سیاه و سفید:', 'tabesh'); ?>
                             <span class="required">*</span>
                         </label>
                         <input type="number" 
