@@ -104,6 +104,7 @@ if ($is_admin) {
             'error' => __('خطا در پردازش درخواست', 'tabesh'),
             'success' => __('عملیات با موفقیت انجام شد', 'tabesh'),
             'confirmStatusChange' => __('آیا از تغییر وضعیت این سفارش اطمینان دارید؟', 'tabesh'),
+            'orderSubmitSuccess' => __('سفارش با موفقیت ثبت شد', 'tabesh'),
         )
     ));
     ?>

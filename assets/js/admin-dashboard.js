@@ -821,8 +821,11 @@
                 // Close modal
                 this.closeOrderModal();
                 
-                // Show success toast
-                this.showToast('سفارش با موفقیت ثبت شد', 'success');
+                // Show success toast using localized string
+                const successMessage = (typeof tabeshAdminData !== 'undefined' && tabeshAdminData.strings && tabeshAdminData.strings.orderSubmitSuccess)
+                    ? tabeshAdminData.strings.orderSubmitSuccess
+                    : 'سفارش با موفقیت ثبت شد';
+                this.showToast(successMessage, 'success');
                 
                 // Refresh page after delay
                 setTimeout(function() {
