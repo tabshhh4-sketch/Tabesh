@@ -434,9 +434,7 @@
             },
             success: function(response) {
                 if (response.success && response.data) {
-                    calculatedPrice = response.data.total_price;
                     displayCalculatedPrice(response.data);
-                    updateFinalPrice();
                 }
             },
             error: function(xhr) {
@@ -461,12 +459,9 @@
      * @param {Object} data Price data / داده‌های قیمت
      */
     function displayCalculatedPrice(data) {
-        // محاسبه قیمت تک جلد و کل به تومان
-        const unitPriceRials = data.price_per_book || 0;
-        const totalPriceRials = data.total_price || 0;
-        
-        const unitPriceTomans = rialsToTomans(unitPriceRials);
-        const totalPriceTomans = rialsToTomans(totalPriceRials);
+        // قیمتها قبلاً به تومان هستند - نیازی به تبدیل نیست
+        const unitPriceTomans = data.price_per_book || 0;
+        const totalPriceTomans = data.total_price || 0;
         
         // نمایش قیمت تک جلد
         $('#aof-unit-price').text(formatPrice(unitPriceTomans));
@@ -477,8 +472,8 @@
         // ذخیره قیمت تک جلد به تومان برای محاسبات بعدی
         calculatedUnitPriceTomans = unitPriceTomans;
         
-        // Store calculated price in Rials for compatibility
-        calculatedPrice = totalPriceRials;
+        // ذخیره قیمت کل به تومان
+        calculatedPrice = totalPriceTomans;
         
         // Update final price display
         updateFinalPrice();
@@ -489,7 +484,8 @@
      * به‌روزرسانی نمایش قیمت نهایی
      */
     function updateFinalPrice() {
-        let finalPriceTomans = rialsToTomans(calculatedPrice || 0);
+        // همه چیز به تومان است - بدون تبدیل
+        let finalPriceTomans = calculatedPrice || 0;
         let unitPriceTomans = calculatedUnitPriceTomans || 0;
         
         const quantity = parseInt($('#aof-quantity').val()) || 1;
@@ -557,12 +553,11 @@
         const formData = getFormData();
         formData.user_id = parseInt(userId);
 
-        // Add override UNIT price if set (convert back to Rials for backend)
-        // افزودن قیمت تک جلد دلخواه در صورت تنظیم (تبدیل به ریال برای بکند)
+        // قیمت دستی تک جلد (مستقیماً به تومان - بدون تبدیل)
         if ($('#aof-override-price-check').is(':checked')) {
             const overrideUnitTomans = parseFloat($('#aof-override-unit-price').val());
             if (!isNaN(overrideUnitTomans) && overrideUnitTomans > 0) {
-                formData.override_unit_price = tomansToRials(overrideUnitTomans); // تبدیل به ریال
+                formData.override_unit_price = overrideUnitTomans; // بدون تبدیل!
             }
         }
 
@@ -756,30 +751,6 @@
         
         // Reset paper weight / بازنشانی گرماژ کاغذ
         $('#aof-paper-weight').empty().append('<option value="">' + tabeshAdminOrderForm.strings.selectPaperFirst + '</option>');
-    }
-
-    /**
-     * Convert Rials to Tomans
-     * تبدیل ریال به تومان
-     * 
-     * @param {number} rials قیمت به ریال
-     * @returns {number} قیمت به تومان
-     */
-    function rialsToTomans(rials) {
-        if (!rials || isNaN(rials)) return 0;
-        return Math.round(rials / 10);
-    }
-
-    /**
-     * Convert Tomans to Rials
-     * تبدیل تومان به ریال
-     * 
-     * @param {number} tomans قیمت به تومان
-     * @returns {number} قیمت به ریال
-     */
-    function tomansToRials(tomans) {
-        if (!tomans || isNaN(tomans)) return 0;
-        return Math.round(tomans * 10);
     }
 
     /**
