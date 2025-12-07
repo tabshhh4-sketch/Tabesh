@@ -533,6 +533,8 @@ class Tabesh_Order {
         // Get next serial number if serial_number column exists
         if (Tabesh_Install::column_exists($table_orders, 'serial_number')) {
             // Get the maximum serial number
+            // The UNIQUE constraint on serial_number will prevent duplicates
+            // In the rare case of concurrent inserts, MySQL will reject duplicates
             // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
             $max_serial = $wpdb->get_var("SELECT MAX(serial_number) FROM `{$table_orders}`");
             $next_serial = $max_serial ? ($max_serial + 1) : 1;
