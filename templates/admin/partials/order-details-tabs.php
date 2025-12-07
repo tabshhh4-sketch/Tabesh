@@ -605,6 +605,12 @@ $status_labels = array(
         </div>
         
         <?php if (!empty($substeps)): ?>
+            <?php if ($order->status === 'confirmed'): ?>
+            <div class="substeps-guide-message" style="background: #e7f3ff; border: 1px solid #b3d9ff; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <span style="font-size: 20px; margin-left: 10px;">ℹ️</span>
+                <span style="color: #0066cc;"><?php esc_html_e('لطفاً تمام مراحل چاپ را تیک بزنید. بعد از تکمیل همه مراحل، میتوانید وضعیت را به "آماده تحویل" تغییر دهید.', 'tabesh'); ?></span>
+            </div>
+            <?php endif; ?>
         <div class="print-substeps-container">
             <div class="substeps-title">
                 🖨️ <?php esc_html_e('جزئیات فرآیند چاپ', 'tabesh'); ?>
