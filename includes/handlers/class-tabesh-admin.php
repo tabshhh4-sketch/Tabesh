@@ -230,7 +230,10 @@ class Tabesh_Admin {
                               'sms_admin_user_registration_pattern', 'sms_admin_order_created_pattern');
         
         // Checkbox fields need special handling because unchecked boxes don't appear in POST
-        $checkbox_fields = array('sms_enabled', 'sms_admin_user_registration_enabled', 'sms_admin_order_created_enabled');
+        $checkbox_fields = array('sms_enabled', 'sms_admin_user_registration_enabled', 'sms_admin_order_created_enabled', 'firewall_enabled');
+        
+        // Add firewall secret key to scalar fields
+        $scalar_fields[] = 'firewall_secret_key';
         
         // Add dynamic SMS status checkbox fields
         $status_labels = Tabesh_SMS::get_status_labels();
