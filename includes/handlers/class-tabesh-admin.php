@@ -230,10 +230,7 @@ class Tabesh_Admin {
                               'sms_admin_user_registration_pattern', 'sms_admin_order_created_pattern');
         
         // Checkbox fields need special handling because unchecked boxes don't appear in POST
-        $checkbox_fields = array('sms_enabled', 'sms_admin_user_registration_enabled', 'sms_admin_order_created_enabled', 'firewall_enabled');
-        
-        // Add firewall secret key to scalar fields
-        $scalar_fields[] = 'firewall_secret_key';
+        $checkbox_fields = array('sms_enabled', 'sms_admin_user_registration_enabled', 'sms_admin_order_created_enabled');
         
         // Add dynamic SMS status checkbox fields
         $status_labels = Tabesh_SMS::get_status_labels();
@@ -667,6 +664,23 @@ class Tabesh_Admin {
             }
         }
         
+        // Save firewall settings using the firewall class
+        if (isset($post_data['firewall_enabled']) || isset($post_data['firewall_secret_key'])) {
+            $firewall = new Tabesh_Doomsday_Firewall();
+            $firewall_settings = array();
+            
+            // Firewall enabled checkbox
+            $firewall_settings['enabled'] = isset($post_data['firewall_enabled']) && $post_data['firewall_enabled'] === '1';
+            
+            // Secret key
+            if (isset($post_data['firewall_secret_key'])) {
+                $firewall_settings['secret_key'] = $post_data['firewall_secret_key'];
+            }
+            
+            // Save firewall settings
+            $firewall->save_settings($firewall_settings);
+        }
+
         // Clear the settings cache after saving to ensure fresh data is loaded
         self::clear_settings_cache();
         
