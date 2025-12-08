@@ -45,7 +45,7 @@ class Tabesh_Export_Import {
 	 * Constructor
 	 */
 	public function __construct() {
-		// No hooks needed - methods called directly via REST API
+		// No hooks needed - methods called directly via REST API.
 	}
 
 	/**
@@ -55,6 +55,60 @@ class Tabesh_Export_Import {
 	 */
 	public function get_available_sections() {
 		return $this->available_sections;
+	}
+
+	/**
+	 * Validate and sanitize section name
+	 *
+	 * @param string $section Section name.
+	 * @return bool True if valid, false otherwise.
+	 */
+	private function is_valid_section( $section ) {
+		return isset( $this->available_sections[ $section ] );
+	}
+
+	/**
+	 * Get table name for a section (with validation)
+	 *
+	 * @param string $section Section name.
+	 * @return string|false Table name or false if invalid.
+	 */
+	private function get_table_name( $section ) {
+		global $wpdb;
+
+		if ( ! $this->is_valid_section( $section ) ) {
+			return false;
+		}
+
+		// Special handling for customers (uses wp_users table).
+		if ( $section === 'customers' ) {
+			return $wpdb->users;
+		}
+
+		// Map section to table name with prefix.
+		return $wpdb->prefix . 'tabesh_' . $section;
+	}
+
+	/**
+	 * Safely execute SELECT * query on validated table
+	 *
+	 * @param string $section Section name.
+	 * @return array Query results or empty array.
+	 */
+	private function get_table_data( $section ) {
+		global $wpdb;
+
+		$table = $this->get_table_name( $section );
+		if ( ! $table ) {
+			return array();
+		}
+
+		// Use esc_sql for table name since it's already validated from whitelist.
+		$table_escaped = esc_sql( $table );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$results = $wpdb->get_results( "SELECT * FROM {$table_escaped}", ARRAY_A );
+
+		return $results ? $results : array();
 	}
 
 	/**
@@ -287,12 +341,7 @@ class Tabesh_Export_Import {
 	 * @return array Orders data
 	 */
 	private function export_orders() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_orders';
-
-		$orders = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $orders ? $orders : array();
+		return $this->get_table_data( 'orders' );
 	}
 
 	/**
@@ -301,12 +350,7 @@ class Tabesh_Export_Import {
 	 * @return array Settings data
 	 */
 	private function export_settings() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_settings';
-
-		$settings = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $settings ? $settings : array();
+		return $this->get_table_data( 'settings' );
 	}
 
 	/**
@@ -352,12 +396,7 @@ class Tabesh_Export_Import {
 	 * @return array Logs data
 	 */
 	private function export_logs() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_logs';
-
-		$logs = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $logs ? $logs : array();
+		return $this->get_table_data( 'logs' );
 	}
 
 	/**
@@ -366,12 +405,7 @@ class Tabesh_Export_Import {
 	 * @return array Files data
 	 */
 	private function export_files() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_files';
-
-		$files = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $files ? $files : array();
+		return $this->get_table_data( 'files' );
 	}
 
 	/**
@@ -380,12 +414,7 @@ class Tabesh_Export_Import {
 	 * @return array File versions data
 	 */
 	private function export_file_versions() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_file_versions';
-
-		$versions = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $versions ? $versions : array();
+		return $this->get_table_data( 'file_versions' );
 	}
 
 	/**
@@ -394,12 +423,7 @@ class Tabesh_Export_Import {
 	 * @return array Upload tasks data
 	 */
 	private function export_upload_tasks() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_upload_tasks';
-
-		$tasks = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $tasks ? $tasks : array();
+		return $this->get_table_data( 'upload_tasks' );
 	}
 
 	/**
@@ -408,12 +432,7 @@ class Tabesh_Export_Import {
 	 * @return array Book format settings data
 	 */
 	private function export_book_format_settings() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_book_format_settings';
-
-		$settings = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $settings ? $settings : array();
+		return $this->get_table_data( 'book_format_settings' );
 	}
 
 	/**
@@ -422,12 +441,7 @@ class Tabesh_Export_Import {
 	 * @return array File comments data
 	 */
 	private function export_file_comments() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_file_comments';
-
-		$comments = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $comments ? $comments : array();
+		return $this->get_table_data( 'file_comments' );
 	}
 
 	/**
@@ -436,12 +450,7 @@ class Tabesh_Export_Import {
 	 * @return array Document metadata
 	 */
 	private function export_document_metadata() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_document_metadata';
-
-		$metadata = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $metadata ? $metadata : array();
+		return $this->get_table_data( 'document_metadata' );
 	}
 
 	/**
@@ -450,12 +459,7 @@ class Tabesh_Export_Import {
 	 * @return array Download tokens data
 	 */
 	private function export_download_tokens() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_download_tokens';
-
-		$tokens = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $tokens ? $tokens : array();
+		return $this->get_table_data( 'download_tokens' );
 	}
 
 	/**
@@ -464,12 +468,7 @@ class Tabesh_Export_Import {
 	 * @return array Security logs data
 	 */
 	private function export_security_logs() {
-		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_security_logs';
-
-		$logs = $wpdb->get_results( "SELECT * FROM $table", ARRAY_A );
-
-		return $logs ? $logs : array();
+		return $this->get_table_data( 'security_logs' );
 	}
 
 	// ==================== IMPORT METHODS ====================
@@ -477,36 +476,50 @@ class Tabesh_Export_Import {
 	/**
 	 * Import orders
 	 *
-	 * @param array  $data Orders data
-	 * @param string $mode Import mode
+	 * @param array  $data Orders data.
+	 * @param string $mode Import mode.
 	 * @return array Result
 	 */
 	private function import_orders( $data, $mode ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_orders';
+		$table         = $this->get_table_name( 'orders' );
+		$table_escaped = esc_sql( $table );
 
 		if ( $mode === 'replace' ) {
-			$wpdb->query( "TRUNCATE TABLE $table" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+			$wpdb->query( "TRUNCATE TABLE {$table_escaped}" );
 		}
 
 		$imported = 0;
 		foreach ( $data as $order ) {
-			// Remove id for insert
-			$order_id = isset( $order['id'] ) ? $order['id'] : null;
+			// Remove id for insert.
+			$order_id = isset( $order['id'] ) ? intval( $order['id'] ) : null;
 			unset( $order['id'] );
 
+			// Sanitize order data.
+			$sanitized_order = array();
+			foreach ( $order as $key => $value ) {
+				$sanitized_order[ sanitize_key( $key ) ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;
+			}
+
 			if ( $mode === 'merge' && $order_id ) {
-				// Check if order exists
-				$exists = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE id = %d", $order_id ) );
+				// Check if order exists.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				$exists = $wpdb->get_var(
+					$wpdb->prepare(
+						"SELECT id FROM {$table_escaped} WHERE id = %d",  // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+						$order_id
+					)
+				);
 
 				if ( $exists ) {
-					$wpdb->update( $table, $order, array( 'id' => $order_id ) );
+					$wpdb->update( $table, $sanitized_order, array( 'id' => $order_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				} else {
-					$order['id'] = $order_id;
-					$wpdb->insert( $table, $order );
+					$sanitized_order['id'] = $order_id;
+					$wpdb->insert( $table, $sanitized_order ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				}
 			} else {
-				$wpdb->insert( $table, $order );
+				$wpdb->insert( $table, $sanitized_order ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			}
 
 			++$imported;
@@ -514,6 +527,7 @@ class Tabesh_Export_Import {
 
 		return array(
 			'success' => true,
+			/* translators: %d: Number of orders */
 			'message' => sprintf( __( '%d سفارش وارد شد', 'tabesh' ), $imported ),
 		);
 	}
@@ -521,43 +535,52 @@ class Tabesh_Export_Import {
 	/**
 	 * Import settings
 	 *
-	 * @param array  $data Settings data
-	 * @param string $mode Import mode
+	 * @param array  $data Settings data.
+	 * @param string $mode Import mode.
 	 * @return array Result
 	 */
 	private function import_settings( $data, $mode ) {
 		global $wpdb;
-		$table = $wpdb->prefix . 'tabesh_settings';
+		$table         = $this->get_table_name( 'settings' );
+		$table_escaped = esc_sql( $table );
 
 		if ( $mode === 'replace' ) {
-			$wpdb->query( "TRUNCATE TABLE $table" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+			$wpdb->query( "TRUNCATE TABLE {$table_escaped}" );
 		}
 
 		$imported = 0;
 		foreach ( $data as $setting ) {
-			$setting_key = $setting['setting_key'];
+			$setting_key = sanitize_text_field( $setting['setting_key'] );
 			unset( $setting['id'] );
 
+			// Sanitize setting data.
+			$sanitized_setting = array();
+			foreach ( $setting as $key => $value ) {
+				$sanitized_setting[ sanitize_key( $key ) ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;
+			}
+
 			if ( $mode === 'merge' ) {
-				// Check if setting exists
+				// Check if setting exists.
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				$exists = $wpdb->get_var(
 					$wpdb->prepare(
-						"SELECT id FROM $table WHERE setting_key = %s",
+						"SELECT id FROM {$table_escaped} WHERE setting_key = %s",  // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 						$setting_key
 					)
 				);
 
 				if ( $exists ) {
-					$wpdb->update(
+					$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 						$table,
-						$setting,
+						$sanitized_setting,
 						array( 'setting_key' => $setting_key )
 					);
 				} else {
-					$wpdb->insert( $table, $setting );
+					$wpdb->insert( $table, $sanitized_setting ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				}
 			} else {
-				$wpdb->insert( $table, $setting );
+				$wpdb->insert( $table, $sanitized_setting ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			}
 
 			++$imported;
@@ -565,6 +588,7 @@ class Tabesh_Export_Import {
 
 		return array(
 			'success' => true,
+			/* translators: %d: Number of settings */
 			'message' => sprintf( __( '%d تنظیم وارد شد', 'tabesh' ), $imported ),
 		);
 	}
@@ -722,29 +746,42 @@ class Tabesh_Export_Import {
 	/**
 	 * Import data into a simple table
 	 *
-	 * @param array  $data Table data
-	 * @param string $table_name Table name (without prefix)
-	 * @param string $mode Import mode
-	 * @param string $label Label for messages
+	 * @param array  $data Table data.
+	 * @param string $table_name Table name (without prefix).
+	 * @param string $mode Import mode.
+	 * @param string $label Label for messages.
 	 * @return array Result
 	 */
 	private function import_simple_table( $data, $table_name, $mode, $label ) {
 		global $wpdb;
 		$table = $wpdb->prefix . $table_name;
 
+		// Sanitize table name using esc_sql since it's from whitelist.
+		$table_escaped = esc_sql( $table );
+
 		if ( $mode === 'replace' ) {
-			$wpdb->query( "TRUNCATE TABLE $table" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+			$wpdb->query( "TRUNCATE TABLE {$table_escaped}" );
 		}
 
 		$imported = 0;
 		foreach ( $data as $row ) {
+			// Remove auto-increment ID.
 			unset( $row['id'] );
-			$wpdb->insert( $table, $row );
+
+			// Sanitize all values before inserting.
+			$sanitized_row = array();
+			foreach ( $row as $key => $value ) {
+				$sanitized_row[ sanitize_key( $key ) ] = is_string( $value ) ? sanitize_text_field( $value ) : $value;
+			}
+
+			$wpdb->insert( $table, $sanitized_row ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			++$imported;
 		}
 
 		return array(
 			'success' => true,
+			/* translators: 1: Number of records, 2: Section label */
 			'message' => sprintf( __( '%1$d %2$s وارد شد', 'tabesh' ), $imported, $label ),
 		);
 	}
@@ -756,8 +793,10 @@ class Tabesh_Export_Import {
 	 */
 	private function get_customers_count() {
 		global $wpdb;
-		$order_table = $wpdb->prefix . 'tabesh_orders';
+		$order_table         = $this->get_table_name( 'orders' );
+		$order_table_escaped = esc_sql( $order_table );
 
-		return (int) $wpdb->get_var( "SELECT COUNT(DISTINCT user_id) FROM $order_table" );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return (int) $wpdb->get_var( "SELECT COUNT(DISTINCT user_id) FROM {$order_table_escaped}" );
 	}
 }
