@@ -926,11 +926,11 @@
             $preview.show();
 
             $.ajax({
-                url: buildRestUrl(tabeshAdmin.restUrl, 'tabesh/v1/export/preview'),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'export/preview'),
                 method: 'GET',
                 data: { sections: sections },
                 beforeSend: function(xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', tabeshAdmin.nonce);
+                    xhr.setRequestHeader('X-WP-Nonce', tabeshAdminData.nonce);
                 },
                 success: function(response) {
                     if (response.success && response.preview) {
@@ -969,12 +969,12 @@
             $status.html('<span style="color: #0073aa;">⏳ در حال برونبری...</span>');
 
             $.ajax({
-                url: buildRestUrl(tabeshAdmin.restUrl, 'tabesh/v1/export'),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'export'),
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({ sections: sections }),
                 beforeSend: function(xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', tabeshAdmin.nonce);
+                    xhr.setRequestHeader('X-WP-Nonce', tabeshAdminData.nonce);
                 },
                 success: function(response) {
                     if (response.success && response.data) {
@@ -1050,12 +1050,12 @@
 
                     // Send to server for validation
                     $.ajax({
-                        url: buildRestUrl(tabeshAdmin.restUrl, 'tabesh/v1/import/validate'),
+                        url: buildRestUrl(tabeshAdminData.restUrl, 'import/validate'),
                         method: 'POST',
                         contentType: 'application/json',
                         data: JSON.stringify({ data: data }),
                         beforeSend: function(xhr) {
-                            xhr.setRequestHeader('X-WP-Nonce', tabeshAdmin.nonce);
+                            xhr.setRequestHeader('X-WP-Nonce', tabeshAdminData.nonce);
                         },
                         success: function(response) {
                             if (response.valid) {
@@ -1139,7 +1139,7 @@
             $status.html('<span style="color: #0073aa;">⏳ در حال درونریزی...</span>');
 
             $.ajax({
-                url: buildRestUrl(tabeshAdmin.restUrl, 'tabesh/v1/import'),
+                url: buildRestUrl(tabeshAdminData.restUrl, 'import'),
                 method: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify({
@@ -1148,7 +1148,7 @@
                     mode: mode
                 }),
                 beforeSend: function(xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', tabeshAdmin.nonce);
+                    xhr.setRequestHeader('X-WP-Nonce', tabeshAdminData.nonce);
                 },
                 success: function(response) {
                     if (response.success) {
