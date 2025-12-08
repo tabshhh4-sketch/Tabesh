@@ -361,9 +361,11 @@ class Tabesh_Export_Import {
 	private function export_customers() {
 		global $wpdb;
 
-		// Get unique user IDs from orders
-		$order_table = $wpdb->prefix . 'tabesh_orders';
-		$user_ids    = $wpdb->get_col( "SELECT DISTINCT user_id FROM $order_table" );
+		// Get unique user IDs from orders.
+		$order_table         = $this->get_table_name( 'orders' );
+		$order_table_escaped = esc_sql( $order_table );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$user_ids = $wpdb->get_col( "SELECT DISTINCT user_id FROM {$order_table_escaped}" );
 
 		if ( empty( $user_ids ) ) {
 			return array();
