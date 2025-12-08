@@ -736,6 +736,14 @@ class Tabesh_Upload {
         // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
         $orders = $wpdb->get_results($wpdb->prepare($query, $query_values));
 
+        // Apply firewall filter to hide confidential orders from customers
+        $firewall = new Tabesh_Doomsday_Firewall();
+        $context = current_user_can('manage_woocommerce') ? 'admin' : 'customer';
+        $orders = $firewall->filter_orders_for_display($orders, $user_id, $context);
+
+        // Update total count after filtering
+        $filtered_total = count($orders);
+
         // Format response
         $formatted_orders = array();
         foreach ($orders as $order) {
@@ -761,11 +769,11 @@ class Tabesh_Upload {
         return new WP_REST_Response(array(
             'success' => true,
             'orders' => $formatted_orders,
-            'total' => intval($total),
+            'total' => $filtered_total,
             'page' => $page,
             'per_page' => $per_page,
-            'total_pages' => ceil($total / $per_page),
-            'has_more' => ($page * $per_page) < $total
+            'total_pages' => ceil($filtered_total / $per_page),
+            'has_more' => ($page * $per_page) < $filtered_total
         ), 200);
     }
 

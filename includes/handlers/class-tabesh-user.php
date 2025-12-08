@@ -343,25 +343,29 @@ class Tabesh_User {
             return new WP_REST_Response(array('error' => 'Unauthorized'), 401);
         }
 
-        global $wpdb;
-        $table = $wpdb->prefix . 'tabesh_orders';
+        // Get filtered orders (firewall is applied in get_user_orders)
+        $orders = $this->get_user_orders($user_id);
         
-        $summary = $wpdb->get_row($wpdb->prepare(
-            "SELECT 
-                COUNT(*) as total_orders,
-                SUM(total_price) as total_price,
-                SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_orders,
-                SUM(CASE WHEN status IN ('pending', 'confirmed', 'processing', 'ready') THEN 1 ELSE 0 END) as active_orders
-            FROM $table 
-            WHERE user_id = %d AND archived = 0",
-            $user_id
-        ));
+        // Calculate summary from filtered orders
+        $total_orders = count($orders);
+        $total_price = 0;
+        $completed_orders = 0;
+        $active_orders = 0;
+        
+        foreach ($orders as $order) {
+            $total_price += floatval($order->total_price);
+            if ($order->status === 'completed') {
+                $completed_orders++;
+            } elseif (in_array($order->status, array('pending', 'confirmed', 'processing', 'ready'), true)) {
+                $active_orders++;
+            }
+        }
 
         return new WP_REST_Response(array(
-            'total_orders' => intval($summary->total_orders),
-            'total_price' => floatval($summary->total_price),
-            'completed_orders' => intval($summary->completed_orders),
-            'active_orders' => intval($summary->active_orders)
+            'total_orders' => $total_orders,
+            'total_price' => $total_price,
+            'completed_orders' => $completed_orders,
+            'active_orders' => $active_orders
         ), 200);
     }
 
