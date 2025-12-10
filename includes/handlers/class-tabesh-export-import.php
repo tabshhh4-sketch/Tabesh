@@ -881,8 +881,24 @@ class Tabesh_Export_Import {
 		$where_parts  = array();
 		$where_values = array();
 
-		// If specific order_id is provided, delete only that order
+		// If specific order_id is provided, verify it exists first
 		if ( $options['order_id'] > 0 ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			$order_exists = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT id FROM {$orders_table} WHERE id = %d",
+					$options['order_id']
+				)
+			);
+
+			if ( ! $order_exists ) {
+				return array(
+					'success' => false,
+					'deleted' => 0,
+					'message' => sprintf( 'سفارش با شناسه %d یافت نشد', $options['order_id'] ),
+				);
+			}
+
 			$where_parts[]  = 'id = %d';
 			$where_values[] = $options['order_id'];
 		} else {
