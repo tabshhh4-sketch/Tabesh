@@ -873,6 +873,7 @@ class Tabesh_Export_Import {
 			'archived'    => false,
 			'user_id'     => 0,
 			'older_than'  => 0, // Days.
+			'order_id'    => 0, // Specific order ID.
 		);
 
 		$options      = wp_parse_args( $options, $defaults );
@@ -880,20 +881,26 @@ class Tabesh_Export_Import {
 		$where_parts  = array();
 		$where_values = array();
 
-		// Build WHERE clause based on options
-		if ( $options['archived'] && ! $options['all'] ) {
-			$where_parts[]  = 'status = %s';
-			$where_values[] = 'archived';
-		}
+		// If specific order_id is provided, delete only that order
+		if ( $options['order_id'] > 0 ) {
+			$where_parts[]  = 'id = %d';
+			$where_values[] = $options['order_id'];
+		} else {
+			// Build WHERE clause based on other options
+			if ( $options['archived'] && ! $options['all'] ) {
+				$where_parts[]  = 'status = %s';
+				$where_values[] = 'archived';
+			}
 
-		if ( $options['user_id'] > 0 ) {
-			$where_parts[]  = 'user_id = %d';
-			$where_values[] = $options['user_id'];
-		}
+			if ( $options['user_id'] > 0 ) {
+				$where_parts[]  = 'user_id = %d';
+				$where_values[] = $options['user_id'];
+			}
 
-		if ( $options['older_than'] > 0 ) {
-			$where_parts[]  = 'created_at < DATE_SUB(NOW(), INTERVAL %d DAY)';
-			$where_values[] = $options['older_than'];
+			if ( $options['older_than'] > 0 ) {
+				$where_parts[]  = 'created_at < DATE_SUB(NOW(), INTERVAL %d DAY)';
+				$where_values[] = $options['older_than'];
+			}
 		}
 
 		// Build final query
