@@ -410,6 +410,7 @@ final class Tabesh {
             user_id bigint(20) UNSIGNED NOT NULL,
             action varchar(255) NOT NULL,
             description longtext DEFAULT NULL,
+            details text DEFAULT NULL,
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY order_id (order_id),
@@ -892,7 +893,25 @@ final class Tabesh {
             // Admin Order Form Shortcode Access Control
             'admin_order_form_allowed_roles' => json_encode(array('administrator')),
             'admin_order_form_allowed_users' => json_encode(array()),
+            // SMS Settings
+            'sms_enabled' => '0',
+            'sms_username' => '',
+            'sms_password' => '',
+            'sms_sender' => '',
+            // Admin SMS notifications
+            'sms_admin_user_registration_enabled' => '0',
+            'sms_admin_user_registration_pattern' => '',
+            'sms_admin_order_created_enabled' => '0',
+            'sms_admin_order_created_pattern' => '',
         );
+        
+        // Add SMS status notifications for all order statuses dynamically
+        // Order statuses: pending, confirmed, processing, ready, completed, cancelled, archived
+        $order_statuses = array('pending', 'confirmed', 'processing', 'ready', 'completed', 'cancelled', 'archived');
+        foreach ($order_statuses as $status) {
+            $defaults['sms_status_' . $status . '_enabled'] = '0';
+            $defaults['sms_status_' . $status . '_pattern'] = '';
+        }
 
         global $wpdb;
         $table_settings = $wpdb->prefix . 'tabesh_settings';
