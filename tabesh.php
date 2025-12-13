@@ -857,6 +857,13 @@ final class Tabesh {
             'file_max_size_image' => '10485760',    // 10 MB in bytes
             'file_max_size_document' => '10485760', // 10 MB in bytes
             'file_max_size_archive' => '104857600', // 100 MB in bytes
+            // File upload settings by category (text, cover, documents)
+            'file_max_size_text' => '52428800',      // 50 MB in bytes for text files
+            'file_max_size_cover' => '10485760',     // 10 MB in bytes for cover files
+            'file_max_size_documents' => '10485760', // 10 MB in bytes for document files
+            'file_allowed_types_text' => json_encode(array('pdf', 'doc', 'docx')),
+            'file_allowed_types_cover' => json_encode(array('jpg', 'jpeg', 'png', 'psd', 'pdf')),
+            'file_allowed_types_documents' => json_encode(array('pdf', 'jpg', 'jpeg', 'png', 'zip', 'rar')),
             'file_min_dpi' => '300',
             'file_retention_days' => '5',
             'file_correction_fee' => '50000',       // Fee per corrected page in Rials
@@ -898,6 +905,11 @@ final class Tabesh {
             'sms_username' => '',
             'sms_password' => '',
             'sms_sender' => '',
+            // SMS event triggers
+            'sms_on_order_submit' => '1',           // Send SMS when order is submitted
+            'sms_on_status_change' => '1',          // Send SMS when order status changes
+            // Admin contact
+            'admin_phone' => '',                     // Admin phone number for notifications
             // Admin SMS notifications
             'sms_admin_user_registration_enabled' => '0',
             'sms_admin_user_registration_pattern' => '',
