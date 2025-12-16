@@ -1578,4 +1578,111 @@ input:focus-visible,
     }
 }
 
+/* Substep History Section */
+.tabesh-staff-panel .substep-history-section {
+    margin-top: 20px;
+    padding: 20px;
+    background: var(--bg-card);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-card);
+}
+
+.tabesh-staff-panel .substep-history-section .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--text-tertiary);
+}
+
+.tabesh-staff-panel .substep-history-section .section-icon {
+    font-size: 24px;
+}
+
+.tabesh-staff-panel .substep-history-section .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.tabesh-staff-panel .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.tabesh-staff-panel .history-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: var(--bg-hover);
+    border-radius: var(--border-radius-sm);
+    position: relative;
+}
+
+.tabesh-staff-panel .history-item::before {
+    content: '';
+    position: absolute;
+    right: 33px;
+    top: 45px;
+    bottom: -15px;
+    width: 2px;
+    background: var(--text-tertiary);
+}
+
+.tabesh-staff-panel .history-item:last-child::before {
+    display: none;
+}
+
+.tabesh-staff-panel .history-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--border-radius-full);
+    background: var(--success);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.tabesh-staff-panel .history-content {
+    flex: 1;
+}
+
+.tabesh-staff-panel .history-description {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+    font-size: 15px;
+}
+
+.tabesh-staff-panel .history-meta {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.tabesh-staff-panel .history-user,
+.tabesh-staff-panel .history-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Dark mode for history */
+.tabesh-staff-panel[data-theme='dark'] .substep-history-section {
+    background: var(--bg-secondary);
+}
+
+.tabesh-staff-panel[data-theme='dark'] .history-item {
+    background: var(--bg-primary);
+}
+
 

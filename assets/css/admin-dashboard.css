@@ -1278,6 +1278,99 @@
 }
 
 /* ==========================================
+   Substep History (similar to status history)
+   ========================================== */
+
+.substep-history-container {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 2px solid var(--admin-text-muted);
+}
+
+.substep-history-container .history-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--admin-text-primary);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.substep-history-container .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.substep-history-container .history-item {
+    display: flex;
+    gap: 15px;
+    padding: 15px;
+    background: var(--admin-bg-primary);
+    border-radius: var(--admin-border-radius-sm);
+    position: relative;
+}
+
+.substep-history-container .history-item::before {
+    content: '';
+    position: absolute;
+    right: 33px;
+    top: 45px;
+    bottom: -15px;
+    width: 2px;
+    background: var(--admin-text-muted);
+}
+
+.substep-history-container .history-item:last-child::before {
+    display: none;
+}
+
+.substep-history-container .history-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--admin-border-radius-full);
+    background: var(--admin-success-green);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.substep-history-container .history-content {
+    flex: 1;
+}
+
+.substep-history-container .history-description {
+    font-weight: 600;
+    color: var(--admin-text-primary);
+    margin-bottom: 5px;
+}
+
+.substep-history-container .history-meta {
+    font-size: 12px;
+    color: var(--admin-text-secondary);
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.substep-history-container .history-user {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.substep-history-container .history-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ==========================================
    Contact Info Tab
    ========================================== */
 
