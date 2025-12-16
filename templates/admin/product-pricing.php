@@ -29,6 +29,11 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 		<p class="description">
 			<?php esc_html_e( 'قیمت‌گذاری مستقل برای هر قطع کتاب - سیستم ماتریکسی پیشرفته', 'tabesh' ); ?>
 		</p>
+		<div class="pricing-help-notice">
+			<strong>💡 راهنما:</strong>
+			<p><?php esc_html_e( 'در این سیستم، قیمت هر صفحه شامل هزینه کاغذ + چاپ است (نه جداگانه). برای مثال: اگر کاغذ 70 گرم تحریر 100 تومان و چاپ تک‌رنگ 300 تومان باشد، عدد 400 را وارد کنید.', 'tabesh' ); ?></p>
+			<p><?php esc_html_e( 'هر قطع کتاب قیمت‌گذاری کاملاً مستقل دارد و نیازی به ضریب یا محاسبه پیچیده نیست.', 'tabesh' ); ?></p>
+		</div>
 	</div>
 
 	<!-- Engine Status Toggle -->
@@ -258,7 +263,8 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 				</p>
 
 				<div class="restrictions-group">
-					<h4><?php esc_html_e( 'کاغذهای ممنوع', 'tabesh' ); ?></h4>
+					<h4><?php esc_html_e( 'کاغذهای ممنوع (کاملاً)', 'tabesh' ); ?></h4>
+					<p class="help-text"><?php esc_html_e( 'این کاغذها برای هر دو نوع چاپ (تک‌رنگ و رنگی) ممنوع می‌شوند', 'tabesh' ); ?></p>
 					<?php
 					foreach ( $paper_types as $paper_type ) :
 						$forbidden = in_array( $paper_type, $pricing_matrix['restrictions']['forbidden_paper_types'] ?? array(), true );
@@ -271,6 +277,44 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 							<?php echo esc_html( $paper_type ); ?>
 						</label>
 					<?php endforeach; ?>
+				</div>
+
+				<div class="restrictions-group">
+					<h4><?php esc_html_e( 'محدودیت نوع چاپ برای هر کاغذ (گزینشی)', 'tabesh' ); ?></h4>
+					<p class="help-text"><?php esc_html_e( 'می‌توانید برای هر کاغذ، فقط تک‌رنگ یا فقط رنگی را ممنوع کنید', 'tabesh' ); ?></p>
+					<table class="restrictions-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'نوع کاغذ', 'tabesh' ); ?></th>
+								<th><?php esc_html_e( 'تک‌رنگ ممنوع؟', 'tabesh' ); ?></th>
+								<th><?php esc_html_e( 'رنگی ممنوع؟', 'tabesh' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php
+							foreach ( $paper_types as $paper_type ) :
+								$forbidden_prints = $pricing_matrix['restrictions']['forbidden_print_types'][ $paper_type ] ?? array();
+								$bw_forbidden     = in_array( 'bw', $forbidden_prints, true );
+								$color_forbidden  = in_array( 'color', $forbidden_prints, true );
+								?>
+								<tr>
+									<td><strong><?php echo esc_html( $paper_type ); ?></strong></td>
+									<td>
+										<input type="checkbox" 
+											   name="restrictions[forbidden_print_types][<?php echo esc_attr( $paper_type ); ?>][]" 
+											   value="bw"
+											   <?php checked( $bw_forbidden ); ?>>
+									</td>
+									<td>
+										<input type="checkbox" 
+											   name="restrictions[forbidden_print_types][<?php echo esc_attr( $paper_type ); ?>][]" 
+											   value="color"
+											   <?php checked( $color_forbidden ); ?>>
+									</td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
 				</div>
 
 				<div class="restrictions-group">
@@ -341,6 +385,34 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 .tabesh-pricing-header h2 {
 	margin: 0 0 10px 0;
 	color: #0073aa;
+}
+
+.pricing-help-notice {
+	background: #fff3cd;
+	border-right: 4px solid #ffc107;
+	padding: 15px;
+	margin-top: 15px;
+	border-radius: 4px;
+}
+
+.pricing-help-notice strong {
+	display: block;
+	margin-bottom: 10px;
+	color: #856404;
+	font-size: 16px;
+}
+
+.pricing-help-notice p {
+	margin: 5px 0;
+	color: #856404;
+	line-height: 1.6;
+}
+
+.help-text {
+	font-size: 13px;
+	color: #666;
+	font-style: italic;
+	margin: 5px 0 10px 0;
 }
 
 .tabesh-pricing-engine-status {
@@ -454,15 +526,38 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 	padding: 15px;
 	background: #fff;
 	border-radius: 4px;
+	border: 1px solid #ddd;
 }
 
 .restrictions-group h4 {
 	margin-top: 0;
+	color: #d63638;
 }
 
 .restrictions-group label {
 	display: block;
 	margin: 8px 0;
+}
+
+.restrictions-table {
+	width: 100%;
+	margin-top: 10px;
+}
+
+.restrictions-table th {
+	background: #f0f0f0;
+	padding: 8px;
+	text-align: center;
+}
+
+.restrictions-table td {
+	padding: 8px;
+	text-align: center;
+	border-bottom: 1px solid #ddd;
+}
+
+.restrictions-table td:first-child {
+	text-align: right;
 }
 
 .pricing-form-footer {

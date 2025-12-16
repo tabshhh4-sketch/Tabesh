@@ -126,18 +126,61 @@ class Tabesh_Pricing_Engine {
 			);
 		}
 
-		// Step 2: Calculate per-page cost (unified: print + paper)
-		// Get per-page cost for this combination: paper_type, paper_weight, print_type
+		// Step 2: Calculate per-page cost (unified: print + paper).
+		// Get per-page cost for this combination: paper_type, paper_weight, print_type.
 		$per_page_cost_bw    = $this->get_page_cost( $pricing_matrix, $paper_type, $paper_weight, 'bw' );
 		$per_page_cost_color = $this->get_page_cost( $pricing_matrix, $paper_type, $paper_weight, 'color' );
 
-		// Step 3: Calculate total pages cost
+		// Check if pricing is configured for the selected parameters.
+		if ( null === $per_page_cost_bw && $page_count_bw > 0 ) {
+			return array(
+				'error'   => true,
+				/* translators: 1: paper type, 2: paper weight, 3: book size */
+				'message' => sprintf(
+					__( 'قیمت چاپ تک‌رنگ برای کاغذ %1$s گرماژ %2$s در قطع %3$s تنظیم نشده است', 'tabesh' ),
+					$paper_type,
+					$paper_weight,
+					$book_size
+				),
+			);
+		}
+
+		if ( null === $per_page_cost_color && $page_count_color > 0 ) {
+			return array(
+				'error'   => true,
+				/* translators: 1: paper type, 2: paper weight, 3: book size */
+				'message' => sprintf(
+					__( 'قیمت چاپ رنگی برای کاغذ %1$s گرماژ %2$s در قطع %3$s تنظیم نشده است', 'tabesh' ),
+					$paper_type,
+					$paper_weight,
+					$book_size
+				),
+			);
+		}
+
+		// Use 0 if null (for unused print types).
+		$per_page_cost_bw    = $per_page_cost_bw ?? 0.0;
+		$per_page_cost_color = $per_page_cost_color ?? 0.0;
+
+		// Step 3: Calculate total pages cost.
 		$pages_cost_bw    = $per_page_cost_bw * $page_count_bw;
 		$pages_cost_color = $per_page_cost_color * $page_count_color;
 		$total_pages_cost = $pages_cost_bw + $pages_cost_color;
 
-		// Step 4: Get binding cost for this book size
+		// Step 4: Get binding cost for this book size.
 		$binding_cost = $this->get_binding_cost( $pricing_matrix, $binding_type );
+
+		if ( null === $binding_cost ) {
+			return array(
+				'error'   => true,
+				/* translators: 1: binding type, 2: book size */
+				'message' => sprintf(
+					__( 'قیمت صحافی %1$s برای قطع %2$s تنظیم نشده است', 'tabesh' ),
+					$binding_type,
+					$book_size
+				),
+			);
+		}
 
 		// Step 5: Get cover cost for this book size
 		$cover_cost = $this->get_cover_cost( $pricing_matrix );
@@ -251,11 +294,11 @@ class Tabesh_Pricing_Engine {
 	/**
 	 * Get per-page cost for specific paper and print combination
 	 *
-	 * @param array  $pricing_matrix Pricing matrix for book size
-	 * @param string $paper_type Paper type
-	 * @param string $paper_weight Paper weight
-	 * @param string $print_type Print type (bw or color)
-	 * @return float Per-page cost
+	 * @param array  $pricing_matrix Pricing matrix for book size.
+	 * @param string $paper_type Paper type.
+	 * @param string $paper_weight Paper weight.
+	 * @param string $print_type Print type (bw or color).
+	 * @return float|null Per-page cost or null if not configured.
 	 */
 	private function get_page_cost( $pricing_matrix, $paper_type, $paper_weight, $print_type ) {
 		// New structure: page_costs[paper_type][paper_weight][print_type]
@@ -270,11 +313,11 @@ class Tabesh_Pricing_Engine {
 			return floatval( $page_costs[ $paper_type ][ $print_type ] );
 		}
 
-		// Default fallback
+		// Return null if not found - caller must handle
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log(
 				sprintf(
-					'Tabesh Pricing Engine V2 WARNING: Page cost not found for paper=%s, weight=%s, print=%s',
+					'Tabesh Pricing Engine V2 ERROR: Page cost not configured for paper=%s, weight=%s, print=%s',
 					$paper_type,
 					$paper_weight,
 					$print_type
@@ -282,15 +325,15 @@ class Tabesh_Pricing_Engine {
 			);
 		}
 
-		return 'color' === $print_type ? 1000.0 : 400.0; // Default values
+		return null;
 	}
 
 	/**
 	 * Get binding cost for this book size
 	 *
-	 * @param array  $pricing_matrix Pricing matrix for book size
-	 * @param string $binding_type Binding type
-	 * @return float Binding cost
+	 * @param array  $pricing_matrix Pricing matrix for book size.
+	 * @param string $binding_type Binding type.
+	 * @return float|null Binding cost or null if not configured.
 	 */
 	private function get_binding_cost( $pricing_matrix, $binding_type ) {
 		$binding_costs = $pricing_matrix['binding_costs'] ?? array();
@@ -300,10 +343,10 @@ class Tabesh_Pricing_Engine {
 		}
 
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( "Tabesh Pricing Engine V2 WARNING: Binding cost not found for type=$binding_type" );
+			error_log( "Tabesh Pricing Engine V2 ERROR: Binding cost not configured for type=$binding_type" );
 		}
 
-		return 3000.0; // Default value
+		return null;
 	}
 
 	/**
@@ -523,6 +566,78 @@ class Tabesh_Pricing_Engine {
 				'forbidden_binding_types' => array(),
 				'forbidden_print_types'   => array(),
 			),
+		);
+	}
+
+	/**
+	 * Get available options for a book size (considering restrictions)
+	 *
+	 * This method provides the allowed options for forms to prevent
+	 * users from selecting forbidden combinations.
+	 *
+	 * @param string $book_size Book size identifier.
+	 * @return array Available options structure.
+	 */
+	public function get_available_options( $book_size ) {
+		$pricing_matrix = $this->get_pricing_matrix( $book_size );
+
+		if ( ! $pricing_matrix ) {
+			return array(
+				'error'   => true,
+				'message' => sprintf( __( 'قطع %s پیکربندی نشده است', 'tabesh' ), $book_size ),
+			);
+		}
+
+		$restrictions = $pricing_matrix['restrictions'] ?? array();
+		$page_costs   = $pricing_matrix['page_costs'] ?? array();
+
+		$available_papers   = array();
+		$available_bindings = array();
+
+		// Get all configured paper types.
+		foreach ( $page_costs as $paper_type => $weights ) {
+			// Check if paper is completely forbidden.
+			if ( in_array( $paper_type, $restrictions['forbidden_paper_types'] ?? array(), true ) ) {
+				continue;
+			}
+
+			// Check which print types are allowed for this paper.
+			$forbidden_prints = $restrictions['forbidden_print_types'][ $paper_type ] ?? array();
+			$allowed_prints   = array();
+
+			if ( ! in_array( 'bw', $forbidden_prints, true ) ) {
+				$allowed_prints[] = 'bw';
+			}
+			if ( ! in_array( 'color', $forbidden_prints, true ) ) {
+				$allowed_prints[] = 'color';
+			}
+
+			// Only include papers that have at least one allowed print type.
+			if ( ! empty( $allowed_prints ) ) {
+				$available_papers[ $paper_type ] = array(
+					'weights'        => array_keys( $weights ),
+					'allowed_prints' => $allowed_prints,
+				);
+			}
+		}
+
+		// Get all configured binding types.
+		$binding_costs      = $pricing_matrix['binding_costs'] ?? array();
+		$forbidden_bindings = $restrictions['forbidden_binding_types'] ?? array();
+
+		foreach ( $binding_costs as $binding_type => $cost ) {
+			if ( ! in_array( $binding_type, $forbidden_bindings, true ) ) {
+				$available_bindings[] = $binding_type;
+			}
+		}
+
+		return array(
+			'book_size'          => $book_size,
+			'available_papers'   => $available_papers,
+			'available_bindings' => $available_bindings,
+			'has_restrictions'   => ! empty( $restrictions['forbidden_paper_types'] )
+									|| ! empty( $restrictions['forbidden_binding_types'] )
+									|| ! empty( $restrictions['forbidden_print_types'] ),
 		);
 	}
 
