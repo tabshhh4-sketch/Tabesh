@@ -49,12 +49,12 @@ class Tabesh_Pricing_Engine {
 	 */
 	public function is_enabled() {
 		global $wpdb;
-		$table_settings = $wpdb->prefix . 'tabesh_settings';
+		$table_name = $wpdb->prefix . 'tabesh_settings';
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$result = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT setting_value FROM {$wpdb->prefix}tabesh_settings WHERE setting_key = %s",
+				"SELECT setting_value FROM {$table_name} WHERE setting_key = %s",
 				'pricing_engine_v2_enabled'
 			)
 		);

@@ -137,7 +137,10 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 			<div class="pricing-section">
 				<h3><?php esc_html_e( '۲. هزینه صحافی (مخصوص این قطع)', 'tabesh' ); ?></h3>
 				<p class="description">
-					<?php esc_html_e( 'هزینه صحافی برای قطع ' . $current_book_size, 'tabesh' ); ?>
+					<?php
+					/* translators: %s: book size name */
+					echo esc_html( sprintf( __( 'هزینه صحافی برای قطع %s', 'tabesh' ), $current_book_size ) );
+					?>
 				</p>
 
 				<table class="pricing-table">
@@ -173,7 +176,10 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 			<div class="pricing-section">
 				<h3><?php esc_html_e( '۳. هزینه جلد (مخصوص این قطع)', 'tabesh' ); ?></h3>
 				<p class="description">
-					<?php esc_html_e( 'هزینه ثابت جلد برای قطع ' . $current_book_size, 'tabesh' ); ?>
+					<?php
+					/* translators: %s: book size name */
+					echo esc_html( sprintf( __( 'هزینه ثابت جلد برای قطع %s', 'tabesh' ), $current_book_size ) );
+					?>
 				</p>
 
 				<table class="pricing-table">

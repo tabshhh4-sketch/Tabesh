@@ -45,21 +45,29 @@ class Tabesh_Product_Pricing {
 			return '<div class="tabesh-error">' . __( 'شما دسترسی به این بخش را ندارید', 'tabesh' ) . '</div>';
 		}
 
-		// Handle engine toggle
-		if ( isset( $_POST['tabesh_toggle_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tabesh_toggle_nonce'] ) ), 'tabesh_toggle_engine' ) ) {
-			$enable_v2 = isset( $_POST['enable_v2'] ) ? sanitize_text_field( wp_unslash( $_POST['enable_v2'] ) ) : '0';
-			if ( '1' === $enable_v2 ) {
-				$this->enable_pricing_engine_v2();
-				echo '<div class="tabesh-success">' . esc_html__( 'موتور قیمت‌گذاری جدید فعال شد', 'tabesh' ) . '</div>';
-			} else {
-				$this->disable_pricing_engine_v2();
-				echo '<div class="tabesh-success">' . esc_html__( 'به موتور قدیمی بازگشت داده شد', 'tabesh' ) . '</div>';
+		// Handle engine toggle - verify nonce first before sanitization
+		if ( isset( $_POST['tabesh_toggle_nonce'] ) && isset( $_POST['action'] ) ) {
+			// Verify nonce with raw value
+			if ( wp_verify_nonce( $_POST['tabesh_toggle_nonce'], 'tabesh_toggle_engine' ) ) {
+				// Now sanitize after verification
+				$enable_v2 = isset( $_POST['enable_v2'] ) ? sanitize_text_field( wp_unslash( $_POST['enable_v2'] ) ) : '0';
+				if ( '1' === $enable_v2 ) {
+					$this->enable_pricing_engine_v2();
+					echo '<div class="tabesh-success">' . esc_html__( 'موتور قیمت‌گذاری جدید فعال شد', 'tabesh' ) . '</div>';
+				} else {
+					$this->disable_pricing_engine_v2();
+					echo '<div class="tabesh-success">' . esc_html__( 'به موتور قدیمی بازگشت داده شد', 'tabesh' ) . '</div>';
+				}
 			}
 		}
 
-		// Handle form submission
-		if ( isset( $_POST['tabesh_pricing_nonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['tabesh_pricing_nonce'] ) ), 'tabesh_save_pricing' ) ) {
-			$this->handle_save_pricing();
+		// Handle form submission - verify nonce first before sanitization
+		if ( isset( $_POST['tabesh_pricing_nonce'] ) && isset( $_POST['book_size'] ) ) {
+			// Verify nonce with raw value
+			if ( wp_verify_nonce( $_POST['tabesh_pricing_nonce'], 'tabesh_save_pricing' ) ) {
+				// Now sanitize after verification
+				$this->handle_save_pricing();
+			}
 		}
 
 		// Get list of configured book sizes
