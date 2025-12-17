@@ -89,11 +89,10 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 
 				<div class="page-costs-matrix">
 					<?php
-					$paper_types   = array( 'تحریر', 'بالک', 'گلاسه' );
-					$paper_weights = array( '60', '70', '80', '100' );
-					$print_types   = array( 'bw' => 'تک‌رنگ', 'color' => 'رنگی' );
+					// Use product parameters from settings instead of hardcoded values
+					$print_types = array( 'bw' => 'تک‌رنگ', 'color' => 'رنگی' );
 
-					foreach ( $paper_types as $paper_type ) :
+					foreach ( $product_paper_types as $paper_type => $weights ) :
 						?>
 						<div class="paper-type-group">
 							<h4><?php echo esc_html( $paper_type ); ?></h4>
@@ -102,14 +101,19 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 									<tr>
 										<th><?php esc_html_e( 'گرماژ', 'tabesh' ); ?></th>
 										<th><?php esc_html_e( 'تک‌رنگ (تومان)', 'tabesh' ); ?></th>
+										<th><?php esc_html_e( 'فعال', 'tabesh' ); ?></th>
 										<th><?php esc_html_e( 'رنگی (تومان)', 'tabesh' ); ?></th>
+										<th><?php esc_html_e( 'فعال', 'tabesh' ); ?></th>
 									</tr>
 								</thead>
 								<tbody>
-									<?php foreach ( $paper_weights as $weight ) : ?>
+									<?php foreach ( $weights as $weight ) : ?>
 										<?php
-										$bw_cost    = $pricing_matrix['page_costs'][ $paper_type ][ $weight ]['bw'] ?? 0;
-										$color_cost = $pricing_matrix['page_costs'][ $paper_type ][ $weight ]['color'] ?? 0;
+										$bw_cost           = $pricing_matrix['page_costs'][ $paper_type ][ $weight ]['bw'] ?? 0;
+										$color_cost        = $pricing_matrix['page_costs'][ $paper_type ][ $weight ]['color'] ?? 0;
+										$forbidden_prints  = $pricing_matrix['restrictions']['forbidden_print_types'][ $paper_type ] ?? array();
+										$bw_enabled        = ! in_array( 'bw', $forbidden_prints, true );
+										$color_enabled     = ! in_array( 'color', $forbidden_prints, true );
 										?>
 										<tr>
 											<td><?php echo esc_html( $weight ); ?></td>
@@ -121,6 +125,15 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 													   min="0" 
 													   class="small-text">
 											</td>
+											<td style="text-align: center;">
+												<label class="toggle-switch">
+													<input type="checkbox" 
+														   name="page_costs[<?php echo esc_attr( $paper_type ); ?>][<?php echo esc_attr( $weight ); ?>][bw_enabled]" 
+														   value="1"
+														   <?php checked( $bw_enabled ); ?>>
+													<span class="toggle-slider"></span>
+												</label>
+											</td>
 											<td>
 												<input type="number" 
 													   name="page_costs[<?php echo esc_attr( $paper_type ); ?>][<?php echo esc_attr( $weight ); ?>][color]" 
@@ -128,6 +141,15 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 													   step="10" 
 													   min="0" 
 													   class="small-text">
+											</td>
+											<td style="text-align: center;">
+												<label class="toggle-switch">
+													<input type="checkbox" 
+														   name="page_costs[<?php echo esc_attr( $paper_type ); ?>][<?php echo esc_attr( $weight ); ?>][color_enabled]" 
+														   value="1"
+														   <?php checked( $color_enabled ); ?>>
+													<span class="toggle-slider"></span>
+												</label>
 											</td>
 										</tr>
 									<?php endforeach; ?>
@@ -157,8 +179,8 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 					</thead>
 					<tbody>
 						<?php
-						$binding_types = array( 'شومیز', 'جلد سخت', 'گالینگور', 'سیمی', 'منگنه' );
-						foreach ( $binding_types as $binding_type ) :
+						// Use product binding types from settings instead of hardcoded values
+						foreach ( $product_binding_types as $binding_type ) :
 							$cost = $pricing_matrix['binding_costs'][ $binding_type ] ?? 0;
 							?>
 							<tr>
@@ -212,21 +234,23 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 					<?php esc_html_e( 'تنظیم قیمت برای خدمات اضافی (لب گرد، شیرینک، ...)', 'tabesh' ); ?>
 				</p>
 
-				<table class="pricing-table">
+				<table class="pricing-table extras-table">
 					<thead>
 						<tr>
 							<th><?php esc_html_e( 'نام خدمت', 'tabesh' ); ?></th>
 							<th><?php esc_html_e( 'قیمت', 'tabesh' ); ?></th>
 							<th><?php esc_html_e( 'نوع محاسبه', 'tabesh' ); ?></th>
+							<th><?php esc_html_e( 'گام (برای صفحات)', 'tabesh' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php
-						$extra_services = array( 'لب گرد', 'خط تا', 'شیرینک', 'سوراخ', 'شماره گذاری' );
-						foreach ( $extra_services as $service ) :
+						// Use product extras from settings instead of hardcoded values
+						foreach ( $product_extras as $service ) :
 							$config = $pricing_matrix['extras_costs'][ $service ] ?? array( 'price' => 0, 'type' => 'per_unit', 'step' => 0 );
+							$is_page_based = ( isset( $config['type'] ) && 'page_based' === $config['type'] );
 							?>
-							<tr>
+							<tr class="extra-row">
 								<td><?php echo esc_html( $service ); ?></td>
 								<td>
 									<input type="number" 
@@ -237,7 +261,7 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 										   class="small-text">
 								</td>
 								<td>
-									<select name="extras_costs[<?php echo esc_attr( $service ); ?>][type]">
+									<select name="extras_costs[<?php echo esc_attr( $service ); ?>][type]" class="extra-type-select">
 										<option value="fixed" <?php selected( $config['type'], 'fixed' ); ?>>
 											<?php esc_html_e( 'ثابت', 'tabesh' ); ?>
 										</option>
@@ -249,78 +273,39 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 										</option>
 									</select>
 								</td>
+								<td class="step-cell">
+									<input type="number" 
+										   name="extras_costs[<?php echo esc_attr( $service ); ?>][step]" 
+										   value="<?php echo esc_attr( $config['step'] ?? 16000 ); ?>" 
+										   step="1000" 
+										   min="0" 
+										   class="small-text extra-step-input"
+										   style="<?php echo $is_page_based ? '' : 'display:none;'; ?>">
+									<span class="step-help" style="<?php echo $is_page_based ? '' : 'display:none;'; ?>">
+										<?php esc_html_e( 'تعداد صفحات', 'tabesh' ); ?>
+									</span>
+								</td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>
 				</table>
 			</div>
 
-			<!-- Section 5: Restrictions -->
+			<!-- Section 5: محدودیت‌های صحافی (Optional Binding Restrictions) -->
 			<div class="pricing-section">
-				<h3><?php esc_html_e( '۵. محدودیت‌ها (ممنوع‌سازی پارامترها)', 'tabesh' ); ?></h3>
+				<h3><?php esc_html_e( '۵. محدودیت‌های صحافی (اختیاری)', 'tabesh' ); ?></h3>
 				<p class="description">
-					<?php esc_html_e( 'تعیین کنید کدام پارامترها برای این قطع مجاز نیستند', 'tabesh' ); ?>
+					<?php esc_html_e( 'در صورت نیاز، می‌توانید برخی نوع‌های صحافی را برای این قطع ممنوع کنید', 'tabesh' ); ?>
 				</p>
-
-				<div class="restrictions-group">
-					<h4><?php esc_html_e( 'کاغذهای ممنوع (کاملاً)', 'tabesh' ); ?></h4>
-					<p class="help-text"><?php esc_html_e( 'این کاغذها برای هر دو نوع چاپ (تک‌رنگ و رنگی) ممنوع می‌شوند', 'tabesh' ); ?></p>
-					<?php
-					foreach ( $paper_types as $paper_type ) :
-						$forbidden = in_array( $paper_type, $pricing_matrix['restrictions']['forbidden_paper_types'] ?? array(), true );
-						?>
-						<label>
-							<input type="checkbox" 
-								   name="restrictions[forbidden_paper_types][]" 
-								   value="<?php echo esc_attr( $paper_type ); ?>"
-								   <?php checked( $forbidden ); ?>>
-							<?php echo esc_html( $paper_type ); ?>
-						</label>
-					<?php endforeach; ?>
-				</div>
-
-				<div class="restrictions-group">
-					<h4><?php esc_html_e( 'محدودیت نوع چاپ برای هر کاغذ (گزینشی)', 'tabesh' ); ?></h4>
-					<p class="help-text"><?php esc_html_e( 'می‌توانید برای هر کاغذ، فقط تک‌رنگ یا فقط رنگی را ممنوع کنید', 'tabesh' ); ?></p>
-					<table class="restrictions-table">
-						<thead>
-							<tr>
-								<th><?php esc_html_e( 'نوع کاغذ', 'tabesh' ); ?></th>
-								<th><?php esc_html_e( 'تک‌رنگ ممنوع؟', 'tabesh' ); ?></th>
-								<th><?php esc_html_e( 'رنگی ممنوع؟', 'tabesh' ); ?></th>
-							</tr>
-						</thead>
-						<tbody>
-							<?php
-							foreach ( $paper_types as $paper_type ) :
-								$forbidden_prints = $pricing_matrix['restrictions']['forbidden_print_types'][ $paper_type ] ?? array();
-								$bw_forbidden     = in_array( 'bw', $forbidden_prints, true );
-								$color_forbidden  = in_array( 'color', $forbidden_prints, true );
-								?>
-								<tr>
-									<td><strong><?php echo esc_html( $paper_type ); ?></strong></td>
-									<td>
-										<input type="checkbox" 
-											   name="restrictions[forbidden_print_types][<?php echo esc_attr( $paper_type ); ?>][]" 
-											   value="bw"
-											   <?php checked( $bw_forbidden ); ?>>
-									</td>
-									<td>
-										<input type="checkbox" 
-											   name="restrictions[forbidden_print_types][<?php echo esc_attr( $paper_type ); ?>][]" 
-											   value="color"
-											   <?php checked( $color_forbidden ); ?>>
-									</td>
-								</tr>
-							<?php endforeach; ?>
-						</tbody>
-					</table>
-				</div>
+				<p class="help-text" style="color: #666; font-size: 13px; margin-top: 8px;">
+					💡 <?php esc_html_e( 'توجه: محدودیت‌های نوع چاپ (تک‌رنگ/رنگی) از طریق کلیدهای فعال/غیرفعال در بخش ۱ تنظیم می‌شوند', 'tabesh' ); ?>
+				</p>
 
 				<div class="restrictions-group">
 					<h4><?php esc_html_e( 'صحافی‌های ممنوع', 'tabesh' ); ?></h4>
 					<?php
-					foreach ( $binding_types as $binding_type ) :
+					// Use product binding types from settings
+					foreach ( $product_binding_types as $binding_type ) :
 						$forbidden = in_array( $binding_type, $pricing_matrix['restrictions']['forbidden_binding_types'] ?? array(), true );
 						?>
 						<label>
@@ -430,3 +415,90 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 </div>
 
 <!-- Styles loaded via enqueued CSS file (assets/css/product-pricing.css) -->
+
+<style>
+/* Toggle Switch Styles */
+.toggle-switch {
+	position: relative;
+	display: inline-block;
+	width: 44px;
+	height: 24px;
+}
+
+.toggle-switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.toggle-slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ccc;
+	transition: .3s;
+	border-radius: 24px;
+}
+
+.toggle-slider:before {
+	position: absolute;
+	content: "";
+	height: 18px;
+	width: 18px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: .3s;
+	border-radius: 50%;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+	background-color: #10b981;
+}
+
+.toggle-switch input:focus + .toggle-slider {
+	box-shadow: 0 0 1px #10b981;
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+	transform: translateX(20px);
+}
+
+/* Extras table step column */
+.extras-table .step-cell {
+	text-align: center;
+}
+
+.extras-table .step-help {
+	display: inline-block;
+	margin-right: 5px;
+	font-size: 12px;
+	color: #666;
+}
+</style>
+
+<script>
+jQuery(document).ready(function($) {
+	// Show/hide step input based on extras type selection
+	$('.extra-type-select').on('change', function() {
+		var $row = $(this).closest('.extra-row');
+		var $stepInput = $row.find('.extra-step-input');
+		var $stepHelp = $row.find('.step-help');
+		var selectedType = $(this).val();
+		
+		if (selectedType === 'page_based') {
+			$stepInput.show();
+			$stepHelp.show();
+		} else {
+			$stepInput.hide();
+			$stepHelp.hide();
+		}
+	});
+	
+	// Initialize on page load
+	$('.extra-type-select').trigger('change');
+});
+</script>
