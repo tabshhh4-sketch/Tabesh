@@ -83,6 +83,9 @@ class Tabesh_Product_Pricing {
 		// Get list of configured book sizes
 		$book_sizes = $this->get_all_book_sizes();
 
+		// Initialize pricing matrices for all book sizes if V2 is enabled but matrices don't exist
+		$this->maybe_initialize_pricing_matrices( $book_sizes );
+
 		// Get product parameters from settings for template use
 		$product_paper_types   = $this->get_product_paper_types();
 		$product_binding_types = $this->get_product_binding_types();
@@ -465,6 +468,130 @@ class Tabesh_Product_Pricing {
 			$decoded = json_decode( $result, true );
 			if ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) {
 				// Filter out invalid values
+				return array_filter(
+					array_map(
+						function ( $extra ) {
+							$extra = is_scalar( $extra ) ? trim( strval( $extra ) ) : '';
+							return ( ! empty( $extra ) && $extra !== 'on' ) ? $extra : null;
+						},
+						$decoded
+					)
+				);
+			}
+		}
+
+		// Default if not found
+		return array( 'لب گرد', 'خط تا', 'شیرینک', 'سوراخ', 'شماره گذاری' );
+	}
+
+	/**
+	 * Initialize pricing matrices for book sizes if they don't exist
+	 * Called when accessing pricing interface to ensure all book sizes have matrices
+	 *
+	 * @param array $book_sizes Array of book sizes
+	 * @return void
+	 */
+	private function maybe_initialize_pricing_matrices( $book_sizes ) {
+		// Only initialize if V2 is enabled
+		if ( ! $this->pricing_engine->is_enabled() ) {
+			return;
+		}
+
+		$configured_sizes = $this->pricing_engine->get_configured_book_sizes();
+
+		// Get product parameters for building default matrices
+		$paper_types   = $this->get_product_paper_types();
+		$binding_types = $this->get_product_binding_types();
+		$extras        = $this->get_product_extras();
+
+		foreach ( $book_sizes as $book_size ) {
+			// Skip if already configured
+			if ( in_array( $book_size, $configured_sizes, true ) ) {
+				continue;
+			}
+
+			// Initialize with default matrix using product parameters
+			$default_matrix = $this->build_default_matrix( $book_size, $paper_types, $binding_types, $extras );
+
+			// Save to database
+			$this->pricing_engine->save_pricing_matrix( $book_size, $default_matrix );
+
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( "Tabesh: Initialized pricing matrix for book size: $book_size" );
+			}
+		}
+	}
+
+	/**
+	 * Build default pricing matrix for a book size using product parameters
+	 *
+	 * @param string $book_size Book size identifier
+	 * @param array  $paper_types Paper types with weights
+	 * @param array  $binding_types Binding types
+	 * @param array  $extras Extra services
+	 * @return array Default pricing matrix
+	 */
+	private function build_default_matrix( $book_size, $paper_types, $binding_types, $extras ) {
+		$matrix = array(
+			'book_size'            => $book_size,
+			'page_costs'           => array(),
+			'binding_costs'        => array(),
+			'cover_cost'           => 8000,
+			'extras_costs'         => array(),
+			'profit_margin'        => 0.0,
+			'restrictions'         => array(
+				'forbidden_paper_types'   => array(),
+				'forbidden_binding_types' => array(),
+				'forbidden_print_types'   => array(),
+			),
+			'quantity_constraints' => array(
+				'minimum_quantity' => 10,
+				'maximum_quantity' => 10000,
+				'quantity_step'    => 10,
+			),
+		);
+
+		// Build page costs from paper types
+		foreach ( $paper_types as $paper_type => $weights ) {
+			foreach ( $weights as $weight ) {
+				// Default prices - can be customized later
+				$matrix['page_costs'][ $paper_type ][ $weight ] = array(
+					'bw'    => 350,  // Default B&W price per page
+					'color' => 950,  // Default color price per page
+				);
+			}
+		}
+
+		// Build binding costs from binding types
+		foreach ( $binding_types as $binding_type ) {
+			// Default binding costs
+			$default_costs = array(
+				'شومیز'    => 3000,
+				'جلد سخت'  => 8000,
+				'گالینگور' => 6000,
+				'سیمی'     => 2000,
+				'منگنه'    => 2500,
+			);
+
+			$matrix['binding_costs'][ $binding_type ] = $default_costs[ $binding_type ] ?? 3000;
+		}
+
+		// Build extras costs
+		foreach ( $extras as $extra ) {
+			// Default extras configuration
+			$default_extras = array(
+				'لب گرد'      => array( 'price' => 1000, 'type' => 'per_unit', 'step' => 0 ),
+				'خط تا'       => array( 'price' => 500, 'type' => 'per_unit', 'step' => 0 ),
+				'شیرینک'      => array( 'price' => 1500, 'type' => 'per_unit', 'step' => 0 ),
+				'سوراخ'       => array( 'price' => 300, 'type' => 'per_unit', 'step' => 0 ),
+				'شماره گذاری' => array( 'price' => 800, 'type' => 'page_based', 'step' => 16000 ),
+			);
+
+			$matrix['extras_costs'][ $extra ] = $default_extras[ $extra ] ?? array( 'price' => 1000, 'type' => 'per_unit', 'step' => 0 );
+		}
+
+		return $matrix;
+	}
 				return array_filter(
 					array_map(
 						function ( $extra ) {
