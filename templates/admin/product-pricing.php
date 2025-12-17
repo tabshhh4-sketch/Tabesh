@@ -240,7 +240,7 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 										// New structure: binding_costs[binding_type][cover_weight]
 										// Legacy fallback: binding_costs[binding_type] (single value)
 										$binding_data = $pricing_matrix['binding_costs'][ $binding_type ] ?? array();
-										
+
 										if ( is_array( $binding_data ) ) {
 											// New structure: array of weights
 											$cover_cost = $binding_data[ $cover_weight ] ?? 0;

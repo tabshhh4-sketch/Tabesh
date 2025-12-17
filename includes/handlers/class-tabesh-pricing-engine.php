@@ -83,13 +83,13 @@ class Tabesh_Pricing_Engine {
 		$is_active = self::is_v2_active();
 
 		return array(
-			'database_value'     => $result,
+			'database_value'      => $result,
 			'database_value_type' => gettype( $result ),
-			'is_null'            => null === $result,
-			'is_v2_active'       => $is_active,
-			'cache_status'       => null === self::$v2_enabled_cache ? 'empty' : 'populated',
-			'cached_value'       => self::$v2_enabled_cache,
-			'table_name'         => $table_name,
+			'is_null'             => null === $result,
+			'is_v2_active'        => $is_active,
+			'cache_status'        => null === self::$v2_enabled_cache ? 'empty' : 'populated',
+			'cached_value'        => self::$v2_enabled_cache,
+			'table_name'          => $table_name,
 		);
 	}
 
@@ -117,11 +117,13 @@ class Tabesh_Pricing_Engine {
 
 		// Debug logging if WP_DEBUG is enabled
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( sprintf(
-				'Tabesh Pricing Engine V2: Checking enabled status - DB value: "%s", Type: %s',
-				$result === null ? 'NULL' : $result,
-				gettype( $result )
-			) );
+			error_log(
+				sprintf(
+					'Tabesh Pricing Engine V2: Checking enabled status - DB value: "%s", Type: %s',
+					$result === null ? 'NULL' : $result,
+					gettype( $result )
+				)
+			);
 		}
 
 		// Check for both string '1' and string 'true'
@@ -132,10 +134,12 @@ class Tabesh_Pricing_Engine {
 		self::$v2_enabled_cache = $is_enabled;
 
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( sprintf(
-				'Tabesh Pricing Engine V2: Status determination - Enabled: %s',
-				$is_enabled ? 'YES' : 'NO'
-			) );
+			error_log(
+				sprintf(
+					'Tabesh Pricing Engine V2: Status determination - Enabled: %s',
+					$is_enabled ? 'YES' : 'NO'
+				)
+			);
 		}
 
 		return $is_enabled;
@@ -156,12 +160,12 @@ class Tabesh_Pricing_Engine {
 		}
 
 		// Sanitize and extract input parameters with strict validation
-		$book_size     = sanitize_text_field( $params['book_size'] ?? '' );
-		$paper_type    = sanitize_text_field( $params['paper_type'] ?? '' );
-		$paper_weight  = sanitize_text_field( $params['paper_weight'] ?? '' );
-		$print_type    = sanitize_text_field( $params['print_type'] ?? '' );
-		$binding_type  = sanitize_text_field( $params['binding_type'] ?? '' );
-		$cover_weight  = sanitize_text_field( $params['cover_paper_weight'] ?? $params['cover_weight'] ?? '' );
+		$book_size    = sanitize_text_field( $params['book_size'] ?? '' );
+		$paper_type   = sanitize_text_field( $params['paper_type'] ?? '' );
+		$paper_weight = sanitize_text_field( $params['paper_weight'] ?? '' );
+		$print_type   = sanitize_text_field( $params['print_type'] ?? '' );
+		$binding_type = sanitize_text_field( $params['binding_type'] ?? '' );
+		$cover_weight = sanitize_text_field( $params['cover_paper_weight'] ?? $params['cover_weight'] ?? '' );
 
 		// Validate and sanitize numeric inputs - prevent null/NaN
 		$page_count_color = intval( $params['page_count_color'] ?? 0 );
@@ -541,26 +545,26 @@ class Tabesh_Pricing_Engine {
 
 		if ( isset( $binding_costs[ $binding_type ] ) ) {
 			$binding_data = $binding_costs[ $binding_type ];
-			
+
 			// New structure: array of weights
 			if ( is_array( $binding_data ) ) {
 				// If cover_weight is provided and exists, use it
 				if ( null !== $cover_weight && isset( $binding_data[ $cover_weight ] ) ) {
 					return floatval( $binding_data[ $cover_weight ] );
 				}
-				
+
 				// Otherwise, try to find any available weight (first one)
 				if ( ! empty( $binding_data ) ) {
 					return floatval( reset( $binding_data ) );
 				}
-				
+
 				// No weights configured
 				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 					error_log( "Tabesh Pricing Engine V2 WARNING: No cover weights configured for binding type=$binding_type" );
 				}
 				return null;
 			}
-			
+
 			// Legacy structure: single cost value
 			return floatval( $binding_data );
 		}
@@ -586,7 +590,7 @@ class Tabesh_Pricing_Engine {
 		if ( isset( $pricing_matrix['cover_cost'] ) ) {
 			return floatval( $pricing_matrix['cover_cost'] );
 		}
-		
+
 		// For new structure, cover cost is included in binding_costs
 		// Return 0 to avoid double-counting
 		return 0.0;
@@ -623,7 +627,7 @@ class Tabesh_Pricing_Engine {
 						// Step represents: price is per X pages
 						// For example, step=100 means price per 100 pages
 						// Default to 100 if not set (price per 100 pages)
-						$step        = intval( $config['step'] ?? 100 );
+						$step = intval( $config['step'] ?? 100 );
 						if ( $step <= 0 ) {
 							$step = 100; // Fallback to prevent division by zero
 						}
