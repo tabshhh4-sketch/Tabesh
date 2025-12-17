@@ -240,7 +240,7 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 							<th><?php esc_html_e( 'نام خدمت', 'tabesh' ); ?></th>
 							<th><?php esc_html_e( 'قیمت', 'tabesh' ); ?></th>
 							<th><?php esc_html_e( 'نوع محاسبه', 'tabesh' ); ?></th>
-							<th><?php esc_html_e( 'گام صفحات (برای نوع بر اساس صفحات)', 'tabesh' ); ?></th>
+							<th><?php esc_html_e( 'تعداد صفحات (برای نوع بر اساس صفحات)', 'tabesh' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -280,12 +280,12 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 										   name="extras_costs[<?php echo esc_attr( $service ); ?>][step]" 
 										   value="<?php echo esc_attr( $service_step ); ?>" 
 										   step="1" 
-										   min="0" 
+										   min="1" 
 										   class="small-text extra-service-step" 
 										   data-service="<?php echo esc_attr( $service ); ?>"
 										   <?php echo ( $service_type !== 'page_based' ) ? 'disabled' : ''; ?>
 										   placeholder="مثال: 100">
-									<small class="help-text"><?php esc_html_e( 'قیمت به ازای هر X صفحه', 'tabesh' ); ?></small>
+									<small class="help-text"><?php esc_html_e( 'قیمت به ازای هر چند صفحه؟ (مثلاً 100 = قیمت به ازای هر 100 صفحه)', 'tabesh' ); ?></small>
 								</td>
 							</tr>
 						<?php endforeach; ?>
