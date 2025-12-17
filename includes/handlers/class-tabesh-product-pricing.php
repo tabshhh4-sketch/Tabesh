@@ -476,6 +476,105 @@ class Tabesh_Product_Pricing {
 	}
 
 	/**
+	 * Get configured paper types from admin settings
+	 *
+	 * @return array Paper types with weights
+	 */
+	private function get_configured_paper_types() {
+		global $wpdb;
+		$table_settings = $wpdb->prefix . 'tabesh_settings';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT setting_value FROM {$table_settings} WHERE setting_key = %s",
+				'paper_types'
+			)
+		);
+
+		if ( $result ) {
+			$decoded = json_decode( $result, true );
+			if ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) {
+				return $decoded;
+			}
+		}
+
+		// Default paper types
+		return array(
+			'تحریر' => array( '60', '70', '80' ),
+			'بالک'  => array( '60', '70', '80', '100' ),
+			'گلاسه' => array( '80', '100', '115' ),
+		);
+	}
+
+	/**
+	 * Get configured binding types from admin settings
+	 *
+	 * @return array Binding types
+	 */
+	private function get_configured_binding_types() {
+		global $wpdb;
+		$table_settings = $wpdb->prefix . 'tabesh_settings';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT setting_value FROM {$table_settings} WHERE setting_key = %s",
+				'binding_types'
+			)
+		);
+
+		if ( $result ) {
+			$decoded = json_decode( $result, true );
+			if ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) {
+				return $decoded;
+			}
+		}
+
+		// Default binding types
+		return array( 'شومیز', 'جلد سخت', 'گالینگور', 'سیمی', 'منگنه' );
+	}
+
+	/**
+	 * Get configured extra services from admin settings
+	 *
+	 * @return array Extra services
+	 */
+	private function get_configured_extra_services() {
+		global $wpdb;
+		$table_settings = $wpdb->prefix . 'tabesh_settings';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT setting_value FROM {$table_settings} WHERE setting_key = %s",
+				'extras'
+			)
+		);
+
+		if ( $result ) {
+			$decoded = json_decode( $result, true );
+			if ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) {
+				// Filter out invalid values
+				return array_values(
+					array_filter(
+						array_map(
+							function ( $extra ) {
+								$extra = is_scalar( $extra ) ? trim( strval( $extra ) ) : '';
+								return ( ! empty( $extra ) && $extra !== 'on' ) ? $extra : null;
+							},
+							$decoded
+						)
+					)
+				);
+			}
+		}
+
+		// Default extra services
+		return array( 'لب گرد', 'خط تا', 'شیرینک', 'سوراخ', 'شماره گذاری' );
+	}
+
+	/**
 	 * Get the required capability for accessing pricing management
 	 *
 	 * @return string Required capability

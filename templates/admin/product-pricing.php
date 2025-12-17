@@ -19,6 +19,29 @@ $current_book_size = isset( $_GET['book_size'] ) ? sanitize_text_field( wp_unsla
 // Get pricing matrix for current book size
 $pricing_matrix = $this->get_pricing_matrix_for_size( $current_book_size );
 
+// Get configured parameters from admin settings - these are used to build the form inputs
+// Using reflection to call private methods - needed for template access
+$reflection        = new ReflectionClass( $this );
+$get_paper_types   = $reflection->getMethod( 'get_configured_paper_types' );
+$get_binding_types = $reflection->getMethod( 'get_configured_binding_types' );
+$get_extra_services = $reflection->getMethod( 'get_configured_extra_services' );
+
+$get_paper_types->setAccessible( true );
+$get_binding_types->setAccessible( true );
+$get_extra_services->setAccessible( true );
+
+$configured_paper_types = $get_paper_types->invoke( $this );
+$configured_binding_types = $get_binding_types->invoke( $this );
+$configured_extra_services = $get_extra_services->invoke( $this );
+
+// Extract paper type names and all possible weights
+$paper_types_names = array_keys( $configured_paper_types );
+$all_weights = array();
+foreach ( $configured_paper_types as $paper_type => $weights ) {
+	$all_weights = array_unique( array_merge( $all_weights, $weights ) );
+}
+sort( $all_weights ); // Sort weights numerically
+
 // Check if V2 engine is enabled
 $v2_enabled = $this->pricing_engine->is_enabled();
 ?>
@@ -89,11 +112,11 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 
 				<div class="page-costs-matrix">
 					<?php
-					$paper_types   = array( 'تحریر', 'بالک', 'گلاسه' );
-					$paper_weights = array( '60', '70', '80', '100' );
-					$print_types   = array( 'bw' => 'تک‌رنگ', 'color' => 'رنگی' );
+					$print_types = array( 'bw' => 'تک‌رنگ', 'color' => 'رنگی' );
 
-					foreach ( $paper_types as $paper_type ) :
+					foreach ( $paper_types_names as $paper_type ) :
+						// Get weights for this specific paper type
+						$paper_weights = $configured_paper_types[ $paper_type ];
 						?>
 						<div class="paper-type-group">
 							<h4><?php echo esc_html( $paper_type ); ?></h4>
@@ -157,8 +180,7 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 					</thead>
 					<tbody>
 						<?php
-						$binding_types = array( 'شومیز', 'جلد سخت', 'گالینگور', 'سیمی', 'منگنه' );
-						foreach ( $binding_types as $binding_type ) :
+						foreach ( $configured_binding_types as $binding_type ) :
 							$cost = $pricing_matrix['binding_costs'][ $binding_type ] ?? 0;
 							?>
 							<tr>
@@ -218,13 +240,15 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 							<th><?php esc_html_e( 'نام خدمت', 'tabesh' ); ?></th>
 							<th><?php esc_html_e( 'قیمت', 'tabesh' ); ?></th>
 							<th><?php esc_html_e( 'نوع محاسبه', 'tabesh' ); ?></th>
+							<th><?php esc_html_e( 'گام صفحات (برای نوع بر اساس صفحات)', 'tabesh' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
 						<?php
-						$extra_services = array( 'لب گرد', 'خط تا', 'شیرینک', 'سوراخ', 'شماره گذاری' );
-						foreach ( $extra_services as $service ) :
+						foreach ( $configured_extra_services as $service ) :
 							$config = $pricing_matrix['extras_costs'][ $service ] ?? array( 'price' => 0, 'type' => 'per_unit', 'step' => 0 );
+							$service_type = $config['type'] ?? 'per_unit';
+							$service_step = $config['step'] ?? 0;
 							?>
 							<tr>
 								<td><?php echo esc_html( $service ); ?></td>
@@ -237,17 +261,31 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 										   class="small-text">
 								</td>
 								<td>
-									<select name="extras_costs[<?php echo esc_attr( $service ); ?>][type]">
-										<option value="fixed" <?php selected( $config['type'], 'fixed' ); ?>>
+									<select name="extras_costs[<?php echo esc_attr( $service ); ?>][type]" 
+											class="extra-service-type" 
+											data-service="<?php echo esc_attr( $service ); ?>">
+										<option value="fixed" <?php selected( $service_type, 'fixed' ); ?>>
 											<?php esc_html_e( 'ثابت', 'tabesh' ); ?>
 										</option>
-										<option value="per_unit" <?php selected( $config['type'], 'per_unit' ); ?>>
+										<option value="per_unit" <?php selected( $service_type, 'per_unit' ); ?>>
 											<?php esc_html_e( 'به ازای هر جلد', 'tabesh' ); ?>
 										</option>
-										<option value="page_based" <?php selected( $config['type'], 'page_based' ); ?>>
+										<option value="page_based" <?php selected( $service_type, 'page_based' ); ?>>
 											<?php esc_html_e( 'بر اساس تعداد صفحات', 'tabesh' ); ?>
 										</option>
 									</select>
+								</td>
+								<td>
+									<input type="number" 
+										   name="extras_costs[<?php echo esc_attr( $service ); ?>][step]" 
+										   value="<?php echo esc_attr( $service_step ); ?>" 
+										   step="1" 
+										   min="0" 
+										   class="small-text extra-service-step" 
+										   data-service="<?php echo esc_attr( $service ); ?>"
+										   <?php echo ( $service_type !== 'page_based' ) ? 'disabled' : ''; ?>
+										   placeholder="مثال: 100">
+									<small class="help-text"><?php esc_html_e( 'قیمت به ازای هر X صفحه', 'tabesh' ); ?></small>
 								</td>
 							</tr>
 						<?php endforeach; ?>
@@ -266,7 +304,7 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 					<h4><?php esc_html_e( 'کاغذهای ممنوع (کاملاً)', 'tabesh' ); ?></h4>
 					<p class="help-text"><?php esc_html_e( 'این کاغذها برای هر دو نوع چاپ (تک‌رنگ و رنگی) ممنوع می‌شوند', 'tabesh' ); ?></p>
 					<?php
-					foreach ( $paper_types as $paper_type ) :
+					foreach ( $paper_types_names as $paper_type ) :
 						$forbidden = in_array( $paper_type, $pricing_matrix['restrictions']['forbidden_paper_types'] ?? array(), true );
 						?>
 						<label>
@@ -292,7 +330,7 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 						</thead>
 						<tbody>
 							<?php
-							foreach ( $paper_types as $paper_type ) :
+							foreach ( $paper_types_names as $paper_type ) :
 								$forbidden_prints = $pricing_matrix['restrictions']['forbidden_print_types'][ $paper_type ] ?? array();
 								$bw_forbidden     = in_array( 'bw', $forbidden_prints, true );
 								$color_forbidden  = in_array( 'color', $forbidden_prints, true );
@@ -320,7 +358,7 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 				<div class="restrictions-group">
 					<h4><?php esc_html_e( 'صحافی‌های ممنوع', 'tabesh' ); ?></h4>
 					<?php
-					foreach ( $binding_types as $binding_type ) :
+					foreach ( $configured_binding_types as $binding_type ) :
 						$forbidden = in_array( $binding_type, $pricing_matrix['restrictions']['forbidden_binding_types'] ?? array(), true );
 						?>
 						<label>
@@ -428,5 +466,34 @@ $v2_enabled = $this->pricing_engine->is_enabled();
 		</div>
 	</form>
 </div>
+
+<!-- JavaScript for extra services step field visibility -->
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+	// Handle extra service type change - show/hide step field
+	$('.extra-service-type').on('change', function() {
+		var service = $(this).data('service');
+		var type = $(this).val();
+		var $stepInput = $('input.extra-service-step[data-service="' + service + '"]');
+		
+		if (type === 'page_based') {
+			$stepInput.prop('disabled', false).closest('td').show();
+		} else {
+			$stepInput.prop('disabled', true).val(0);
+		}
+	});
+	
+	// Initialize on page load
+	$('.extra-service-type').each(function() {
+		var service = $(this).data('service');
+		var type = $(this).val();
+		var $stepInput = $('input.extra-service-step[data-service="' + service + '"]');
+		
+		if (type !== 'page_based') {
+			$stepInput.prop('disabled', true);
+		}
+	});
+});
+</script>
 
 <!-- Styles loaded via enqueued CSS file (assets/css/product-pricing.css) -->
