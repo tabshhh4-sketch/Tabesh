@@ -1,4 +1,3 @@
-#!/usr/bin/env php
 <?php
 /**
  * Test script to verify pricing matrix key encoding fix
@@ -6,11 +5,22 @@
  * This script tests that all components use consistent base64 encoding
  * for pricing matrix database keys.
  * 
- * Run from plugin root directory:
- * php test-encoding-fix.php
+ * Run from command line:
+ * cd /path/to/Tabesh && php test-encoding-fix.php
+ * 
+ * Or run from WordPress (requires WordPress loaded):
+ * include 'test-encoding-fix.php'; run_tests();
  * 
  * @package Tabesh
  */
+
+// Only run directly if in CLI mode
+if ( PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg' ) {
+	// If not in CLI, this file should be included and run_tests() called manually
+	if ( ! defined( 'ABSPATH' ) ) {
+		die( 'This test script should be run from command line or included in WordPress context.' );
+	}
+}
 
 // Colors for output
 define( 'COLOR_GREEN', "\033[0;32m" );
@@ -201,7 +211,7 @@ function run_tests() {
 	}
 }
 
-// Run tests if executed directly
-if ( PHP_SAPI === 'cli' ) {
+// Run tests if executed directly from CLI
+if ( PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg' ) {
 	exit( run_tests() );
 }
