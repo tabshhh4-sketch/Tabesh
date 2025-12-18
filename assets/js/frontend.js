@@ -37,7 +37,9 @@
             this.totalSteps = 12;
             this.formData = {};
             this.paperTypes = {};
-            this.priceCalculationRequest = null; // Store current AJAX request for cancellation
+            // Store current AJAX request for cancellation to prevent race conditions
+            // when user changes form values rapidly (e.g., adjusting quantity slider).
+            this.priceCalculationRequest = null;
             
             this.init();
         }

@@ -472,8 +472,9 @@ class Tabesh_Pricing_Engine {
 		}
 
 		// Stage 1: Check restrictions (forbidden combinations).
+		$restrictions = $pricing_matrix['restrictions'] ?? array();
 
-		// Check if this paper type is forbidden
+		// Check if this paper type is forbidden.
 		$forbidden_papers = $restrictions['forbidden_paper_types'] ?? array();
 		if ( in_array( $paper_type, $forbidden_papers, true ) ) {
 			return array(
