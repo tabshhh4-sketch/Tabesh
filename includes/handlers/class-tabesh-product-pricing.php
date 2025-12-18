@@ -553,8 +553,7 @@ class Tabesh_Product_Pricing {
 		$safe_key    = base64_encode( $book_size );
 		$setting_key = 'pricing_matrix_' . $safe_key;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->get_var(
+		$result = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"SELECT setting_value FROM $table_settings WHERE setting_key = %s",
 				$setting_key
