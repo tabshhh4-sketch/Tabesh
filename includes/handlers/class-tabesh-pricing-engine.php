@@ -51,6 +51,61 @@ class Tabesh_Pricing_Engine {
 	}
 
 	/**
+	 * Decode book size key from database-safe format
+	 * 
+	 * Handles both base64-encoded keys (new format) and legacy keys.
+	 * Validates the decoded result to ensure it's a reasonable book size string.
+	 * 
+	 * @param string $safe_key The database key with pricing_matrix_ prefix removed.
+	 * @return string The original book size name.
+	 */
+	private function decode_book_size_key( $safe_key ) {
+		// Try base64 decoding first (new format).
+		$decoded = base64_decode( $safe_key, true );
+		
+		// Validate decoded result.
+		if ( false !== $decoded && $this->is_valid_book_size_string( $decoded ) ) {
+			return $decoded;
+		}
+		
+		// Legacy key format - not base64 encoded.
+		// Still validate it's reasonable.
+		if ( $this->is_valid_book_size_string( $safe_key ) ) {
+			return $safe_key;
+		}
+		
+		// If neither format is valid, log warning and return as-is.
+		// This allows system to continue functioning even with unexpected keys.
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log(
+				sprintf(
+					'Tabesh WARNING: Unexpected book_size key format: "%s"',
+					$safe_key
+				)
+			);
+		}
+		
+		return $safe_key;
+	}
+
+	/**
+	 * Validate that a string looks like a reasonable book size name
+	 * 
+	 * @param string $str The string to validate.
+	 * @return bool True if valid, false otherwise.
+	 */
+	private function is_valid_book_size_string( $str ) {
+		// Book size should be non-empty, reasonable length, and contain valid characters.
+		// Allow alphanumeric, Persian/Arabic characters, spaces, and common punctuation.
+		return (
+			is_string( $str ) &&
+			strlen( $str ) > 0 &&
+			strlen( $str ) <= 50 && // Reasonable max length.
+			preg_match( '/^[\p{L}\p{N}\s\-_.()]+$/u', $str )
+		);
+	}
+
+	/**
 	 * Static helper to check if V2 is active without instantiating the class
 	 * This is the recommended way to check pricing engine status
 	 *
@@ -893,17 +948,12 @@ class Tabesh_Pricing_Engine {
 		self::$pricing_matrix_cache = array();
 
 		foreach ( $result as $row ) {
-			// Extract book size from key: pricing_matrix_<base64> -> <original>
+			// Extract book size from key: pricing_matrix_<base64> -> <original>.
 			$key      = $row['setting_key'];
 			$safe_key = str_replace( 'pricing_matrix_', '', $key );
 			
-			// CRITICAL FIX: Decode base64-encoded book size to get original Persian text
-			// This handles both new base64-encoded keys and legacy keys for backward compatibility
-			$size = base64_decode( $safe_key, true );
-			if ( false === $size ) {
-				// Legacy key format (not base64) - use as-is for backward compatibility
-				$size = $safe_key;
-			}
+			// Decode base64-encoded book size to get original Persian text.
+			$size = $this->decode_book_size_key( $safe_key );
 			
 			$value   = $row['setting_value'];
 			$decoded = json_decode( $value, true );
@@ -1164,8 +1214,21 @@ class Tabesh_Pricing_Engine {
 		if ( false !== $result ) {
 			self::clear_cache();
 			
-			// After saving, clean up any corrupted pricing matrices
-			$this->cleanup_corrupted_matrices();
+			// Only run cleanup if this is the first save or if corruption is suspected.
+			// Use a transient to track last cleanup time to avoid running on every save.
+			$last_cleanup = get_transient( 'tabesh_pricing_last_cleanup' );
+			$should_cleanup = false === $last_cleanup; // First save after transient expired.
+			
+			if ( $should_cleanup ) {
+				$removed = $this->cleanup_corrupted_matrices();
+				if ( $removed > 0 ) {
+					// Set transient to prevent cleanup for 1 hour if corruption was found.
+					set_transient( 'tabesh_pricing_last_cleanup', time(), HOUR_IN_SECONDS );
+				} else {
+					// Set longer transient (24 hours) if no corruption found.
+					set_transient( 'tabesh_pricing_last_cleanup', time(), DAY_IN_SECONDS );
+				}
+			}
 			
 			return true;
 		}
@@ -1177,7 +1240,7 @@ class Tabesh_Pricing_Engine {
 	 * Clean up corrupted pricing matrices
 	 * 
 	 * Removes any pricing matrix entries that don't correspond to valid book sizes
-	 * from the product parameters. This is called automatically after each save.
+	 * from the product parameters. Uses bulk delete for efficiency.
 	 * 
 	 * @return int Number of corrupted entries removed
 	 */
@@ -1185,7 +1248,8 @@ class Tabesh_Pricing_Engine {
 		global $wpdb;
 		$table_settings = $wpdb->prefix . 'tabesh_settings';
 		
-		// Get valid book sizes from product parameters (source of truth)
+		// Get valid book sizes from product parameters (source of truth).
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$valid_sizes_result = $wpdb->get_var(
 			$wpdb->prepare(
 				"SELECT setting_value FROM {$table_settings} WHERE setting_key = %s",
@@ -1202,14 +1266,14 @@ class Tabesh_Pricing_Engine {
 		}
 		
 		if ( empty( $valid_sizes ) ) {
-			// No valid sizes configured, cannot clean up
+			// No valid sizes configured, cannot clean up.
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				error_log( 'Tabesh: cleanup_corrupted_matrices skipped - no valid book sizes configured' );
 			}
 			return 0;
 		}
 		
-		// Get all pricing matrix entries
+		// Get all pricing matrix entries.
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$all_matrices = $wpdb->get_results(
 			$wpdb->prepare(
@@ -1219,56 +1283,59 @@ class Tabesh_Pricing_Engine {
 			ARRAY_A
 		);
 		
-		$removed_count = 0;
+		// Collect corrupted keys for bulk delete.
+		$corrupted_keys = array();
 		
 		foreach ( $all_matrices as $row ) {
 			$setting_key = $row['setting_key'];
 			$safe_key    = str_replace( 'pricing_matrix_', '', $setting_key );
 			
-			// Decode base64-encoded book size
-			$book_size = base64_decode( $safe_key, true );
-			if ( false === $book_size ) {
-				// Legacy key format - use as-is
-				$book_size = $safe_key;
-			}
+			// Decode book size using helper method.
+			$book_size = $this->decode_book_size_key( $safe_key );
 			
-			// Check if this book size is valid
+			// Check if this book size is valid.
 			if ( ! in_array( $book_size, $valid_sizes, true ) ) {
-				// This is a corrupted entry - remove it
-				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-				$deleted = $wpdb->delete(
-					$table_settings,
-					array( 'setting_key' => $setting_key ),
-					array( '%s' )
-				);
+				// This is a corrupted entry - mark for deletion.
+				$corrupted_keys[] = $setting_key;
 				
-				if ( false !== $deleted ) {
-					$removed_count++;
-					
-					if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-						error_log(
-							sprintf(
-								'Tabesh: Removed corrupted pricing matrix - Key: "%s", Invalid book_size: "%s"',
-								$setting_key,
-								$book_size
-							)
-						);
-					}
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log(
+						sprintf(
+							'Tabesh: Found corrupted pricing matrix - Key: "%s", Invalid book_size: "%s"',
+							$setting_key,
+							$book_size
+						)
+					);
 				}
 			}
 		}
 		
-		if ( $removed_count > 0 ) {
-			self::clear_cache();
+		// Perform bulk delete if corrupted entries found.
+		$removed_count = 0;
+		if ( ! empty( $corrupted_keys ) ) {
+			$placeholders = implode( ', ', array_fill( 0, count( $corrupted_keys ), '%s' ) );
 			
-			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log(
-					sprintf(
-						'Tabesh: Cleanup complete - Removed %d corrupted pricing %s',
-						$removed_count,
-						$removed_count === 1 ? 'matrix' : 'matrices'
-					)
-				);
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$deleted = $wpdb->query(
+				$wpdb->prepare(
+					"DELETE FROM {$table_settings} WHERE setting_key IN ($placeholders)",
+					...$corrupted_keys
+				)
+			);
+			
+			if ( false !== $deleted ) {
+				$removed_count = $deleted;
+				self::clear_cache();
+				
+				if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+					error_log(
+						sprintf(
+							'Tabesh: Cleanup complete - Removed %d corrupted pricing %s using bulk delete',
+							$removed_count,
+							$removed_count === 1 ? 'matrix' : 'matrices'
+						)
+					);
+				}
 			}
 		}
 		
@@ -1298,13 +1365,8 @@ class Tabesh_Pricing_Engine {
 			$setting_key = $row['setting_key'];
 			$safe_key    = str_replace( 'pricing_matrix_', '', $setting_key );
 			
-			// CRITICAL FIX: Decode base64-encoded book size to get original Persian text
-			// This handles both new base64-encoded keys and legacy keys for backward compatibility
-			$size = base64_decode( $safe_key, true );
-			if ( false === $size ) {
-				// Legacy key format (not base64) - use as-is for backward compatibility
-				$size = $safe_key;
-			}
+			// Decode base64-encoded book size to get original Persian text.
+			$size = $this->decode_book_size_key( $safe_key );
 			
 			$sizes[] = $size;
 		}
