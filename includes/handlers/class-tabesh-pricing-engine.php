@@ -96,7 +96,14 @@ class Tabesh_Pricing_Engine {
 	 */
 	private function is_valid_book_size_string( $str ) {
 		// Book size should be non-empty, reasonable length, and contain valid characters.
-		// Allow alphanumeric, Persian/Arabic characters, spaces, and common punctuation.
+		// Validate format: alphanumeric, Persian/Arabic characters, spaces, and common punctuation.
+		// Pattern breakdown:
+		// \p{L} = Any letter (including Persian/Arabic)
+		// \p{N} = Any number
+		// \s = Whitespace
+		// \-_.() = Common punctuation for book sizes
+		// + = One or more characters
+		// u = Unicode mode
 		return (
 			is_string( $str ) &&
 			strlen( $str ) > 0 &&
@@ -1242,9 +1249,12 @@ class Tabesh_Pricing_Engine {
 	 * Removes any pricing matrix entries that don't correspond to valid book sizes
 	 * from the product parameters. Uses bulk delete for efficiency.
 	 * 
+	 * This is a private method called internally by save_pricing_matrix().
+	 * 
+	 * @since 2.0.0
 	 * @return int Number of corrupted entries removed
 	 */
-	public function cleanup_corrupted_matrices() {
+	private function cleanup_corrupted_matrices() {
 		global $wpdb;
 		$table_settings = $wpdb->prefix . 'tabesh_settings';
 		
