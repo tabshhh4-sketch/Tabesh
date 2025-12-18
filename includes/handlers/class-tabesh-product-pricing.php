@@ -110,7 +110,6 @@ class Tabesh_Product_Pricing {
 			'book_size'            => $book_size,
 			'page_costs'           => $this->parse_page_costs( $_POST['page_costs'] ?? array() ),
 			'binding_costs'        => $this->parse_binding_costs( $_POST['binding_costs'] ?? array() ),
-			'cover_cost'           => isset( $_POST['cover_cost'] ) ? floatval( $_POST['cover_cost'] ) : 8000.0,
 			'extras_costs'         => $this->parse_extras_costs( $_POST['extras_costs'] ?? array() ),
 			'profit_margin'        => isset( $_POST['profit_margin'] ) ? floatval( $_POST['profit_margin'] ) / 100 : 0.0,
 			'restrictions'         => $this->parse_restrictions( $_POST['restrictions'] ?? array() ),
@@ -169,6 +168,9 @@ class Tabesh_Product_Pricing {
 	/**
 	 * Parse binding costs from POST data
 	 *
+	 * Now includes cover costs per weight for each binding type:
+	 * binding_costs[binding_type][cover_weight] = cost
+	 *
 	 * @param array $data POST data for binding costs
 	 * @return array Parsed binding costs
 	 */
@@ -179,9 +181,21 @@ class Tabesh_Product_Pricing {
 			return $binding_costs;
 		}
 
-		foreach ( $data as $binding_type => $cost ) {
-			$binding_type                   = sanitize_text_field( $binding_type );
-			$binding_costs[ $binding_type ] = floatval( $cost );
+		foreach ( $data as $binding_type => $weights_or_cost ) {
+			$binding_type = sanitize_text_field( $binding_type );
+
+			// New structure: binding_costs[binding_type][cover_weight] = cost
+			if ( is_array( $weights_or_cost ) ) {
+				$binding_costs[ $binding_type ] = array();
+				foreach ( $weights_or_cost as $cover_weight => $cost ) {
+					$cover_weight                                    = sanitize_text_field( $cover_weight );
+					$binding_costs[ $binding_type ][ $cover_weight ] = floatval( $cost );
+				}
+			} else {
+				// Legacy structure: binding_costs[binding_type] = cost
+				// Keep for backward compatibility
+				$binding_costs[ $binding_type ] = floatval( $weights_or_cost );
+			}
 		}
 
 		return $binding_costs;
@@ -228,6 +242,7 @@ class Tabesh_Product_Pricing {
 			'forbidden_paper_types'   => array(),
 			'forbidden_binding_types' => array(),
 			'forbidden_print_types'   => array(),
+			'forbidden_cover_weights' => array(),
 		);
 
 		if ( ! is_array( $data ) ) {
@@ -241,22 +256,22 @@ class Tabesh_Product_Pricing {
 			// Get all paper types and their weights to check which ones are disabled
 			// First, collect all enabled combinations
 			$enabled_combinations = array();
-			
+
 			foreach ( $data['forbidden_print_types'] as $paper_type => $weights_data ) {
 				$paper_type = sanitize_text_field( $paper_type );
-				
+
 				if ( ! is_array( $weights_data ) ) {
 					continue;
 				}
-				
+
 				foreach ( $weights_data as $weight => $print_types_data ) {
 					if ( ! is_array( $print_types_data ) ) {
 						continue;
 					}
-					
+
 					foreach ( $print_types_data as $print_type => $value ) {
 						$print_type = sanitize_text_field( $print_type );
-						
+
 						// If checkbox exists in POST (value = "0"), it means it's ENABLED
 						// So we track enabled combinations
 						if ( ! isset( $enabled_combinations[ $paper_type ] ) ) {
@@ -266,27 +281,70 @@ class Tabesh_Product_Pricing {
 					}
 				}
 			}
-			
+
 			// Now determine which print types are forbidden for each paper type
 			// If BOTH bw and color are disabled for a paper type, we mark it as forbidden
 			// Otherwise, we mark specific print types as forbidden
 			foreach ( $enabled_combinations as $paper_type => $enabled_prints ) {
 				$bw_enabled    = isset( $enabled_prints['bw'] );
 				$color_enabled = isset( $enabled_prints['color'] );
-				
+
 				// Build the forbidden list for this paper type
 				$forbidden_for_paper = array();
-				
+
 				if ( ! $bw_enabled ) {
 					$forbidden_for_paper[] = 'bw';
 				}
 				if ( ! $color_enabled ) {
 					$forbidden_for_paper[] = 'color';
 				}
-				
+
 				// Only add to restrictions if there are forbidden types
 				if ( ! empty( $forbidden_for_paper ) ) {
 					$restrictions['forbidden_print_types'][ $paper_type ] = $forbidden_for_paper;
+				}
+			}
+		}
+
+		// Parse forbidden cover weights from inline toggles
+		// Format: restrictions[forbidden_cover_weights][binding_type][cover_weight] = "0" (checked = enabled)
+		if ( isset( $data['forbidden_cover_weights'] ) && is_array( $data['forbidden_cover_weights'] ) ) {
+			$enabled_cover_combinations = array();
+
+			foreach ( $data['forbidden_cover_weights'] as $binding_type => $weights_data ) {
+				$binding_type = sanitize_text_field( $binding_type );
+
+				if ( ! is_array( $weights_data ) ) {
+					continue;
+				}
+
+				foreach ( $weights_data as $cover_weight => $value ) {
+					$cover_weight = sanitize_text_field( $cover_weight );
+
+					// If checkbox exists in POST (value = "0"), it means it's ENABLED
+					if ( ! isset( $enabled_cover_combinations[ $binding_type ] ) ) {
+						$enabled_cover_combinations[ $binding_type ] = array();
+					}
+					$enabled_cover_combinations[ $binding_type ][ $cover_weight ] = true;
+				}
+			}
+
+			// Determine forbidden cover weights for each binding type
+			// We need to get all cover weights to know which ones are disabled
+			$all_cover_weights = $this->get_configured_cover_weights();
+
+			foreach ( $enabled_cover_combinations as $binding_type => $enabled_weights ) {
+				$forbidden_for_binding = array();
+
+				foreach ( $all_cover_weights as $weight ) {
+					if ( ! isset( $enabled_weights[ $weight ] ) ) {
+						$forbidden_for_binding[] = $weight;
+					}
+				}
+
+				// Only add to restrictions if there are forbidden weights
+				if ( ! empty( $forbidden_for_binding ) ) {
+					$restrictions['forbidden_cover_weights'][ $binding_type ] = $forbidden_for_binding;
 				}
 			}
 		}
@@ -431,10 +489,12 @@ class Tabesh_Product_Pricing {
 
 		// Debug log existing value
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( sprintf(
-				'Tabesh: Existing pricing_engine_v2_enabled value: "%s"',
-				$existing === null ? 'NULL (not found in DB)' : $existing
-			) );
+			error_log(
+				sprintf(
+					'Tabesh: Existing pricing_engine_v2_enabled value: "%s"',
+					$existing === null ? 'NULL (not found in DB)' : $existing
+				)
+			);
 		}
 
 		if ( $existing !== null ) {
@@ -448,11 +508,13 @@ class Tabesh_Product_Pricing {
 			);
 
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( sprintf(
-					'Tabesh: UPDATE result for pricing_engine_v2_enabled: %s (rows affected: %d)',
-					$result === false ? 'FAILED' : 'SUCCESS',
-					$result === false ? 0 : $result
-				) );
+				error_log(
+					sprintf(
+						'Tabesh: UPDATE result for pricing_engine_v2_enabled: %s (rows affected: %d)',
+						$result === false ? 'FAILED' : 'SUCCESS',
+						$result === false ? 0 : $result
+					)
+				);
 				if ( $result === false ) {
 					error_log( 'Tabesh: Database error: ' . $wpdb->last_error );
 				}
@@ -469,10 +531,12 @@ class Tabesh_Product_Pricing {
 			);
 
 			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-				error_log( sprintf(
-					'Tabesh: INSERT result for pricing_engine_v2_enabled: %s',
-					$result === false ? 'FAILED' : 'SUCCESS'
-				) );
+				error_log(
+					sprintf(
+						'Tabesh: INSERT result for pricing_engine_v2_enabled: %s',
+						$result === false ? 'FAILED' : 'SUCCESS'
+					)
+				);
 				if ( $result === false ) {
 					error_log( 'Tabesh: Database error: ' . $wpdb->last_error );
 				}
@@ -493,10 +557,12 @@ class Tabesh_Product_Pricing {
 						'pricing_engine_v2_enabled'
 					)
 				);
-				error_log( sprintf(
-					'Tabesh: VERIFICATION - Value in DB after save: "%s"',
-					$verify === null ? 'NULL' : $verify
-				) );
+				error_log(
+					sprintf(
+						'Tabesh: VERIFICATION - Value in DB after save: "%s"',
+						$verify === null ? 'NULL' : $verify
+					)
+				);
 			}
 		}
 
@@ -603,6 +669,73 @@ class Tabesh_Product_Pricing {
 	}
 
 	/**
+	 * Get configured cover paper weights from admin settings
+	 *
+	 * @return array Cover paper weights
+	 */
+	private function get_configured_cover_weights() {
+		global $wpdb;
+		$table_settings = $wpdb->prefix . 'tabesh_settings';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$result = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT setting_value FROM {$table_settings} WHERE setting_key = %s",
+				'cover_paper_weights'
+			)
+		);
+
+		if ( $result ) {
+			$decoded = json_decode( $result, true );
+			if ( JSON_ERROR_NONE === json_last_error() && is_array( $decoded ) ) {
+				// Filter out invalid values and ensure numeric sort
+				$weights = array_filter(
+					array_map(
+						function ( $weight ) {
+							$weight = is_scalar( $weight ) ? trim( strval( $weight ) ) : '';
+							return ( ! empty( $weight ) && is_numeric( $weight ) ) ? $weight : null;
+						},
+						$decoded
+					)
+				);
+				// Sort numerically
+				usort(
+					$weights,
+					function ( $a, $b ) {
+						return intval( $a ) - intval( $b );
+					}
+				);
+				return array_values( $weights );
+			}
+		}
+
+		// Default cover paper weights
+		return array( '200', '250', '300', '350' );
+	}
+
+	/**
+	 * Get binding cost for a specific combination of binding type and cover weight
+	 *
+	 * Handles both new structure (array of weights) and legacy structure (single value).
+	 *
+	 * @param array  $pricing_matrix Pricing matrix data.
+	 * @param string $binding_type Binding type.
+	 * @param string $cover_weight Cover weight.
+	 * @return float Binding cost (defaults to 0 if not found).
+	 */
+	public function get_binding_cost_for_weight( $pricing_matrix, $binding_type, $cover_weight ) {
+		$binding_data = $pricing_matrix['binding_costs'][ $binding_type ] ?? array();
+
+		if ( is_array( $binding_data ) ) {
+			// New structure: array of weights.
+			return floatval( $binding_data[ $cover_weight ] ?? 0 );
+		}
+
+		// Legacy structure: single cost value - use it as default for all weights.
+		return floatval( $binding_data );
+	}
+
+	/**
 	 * Get the required capability for accessing pricing management
 	 *
 	 * @return string Required capability
@@ -703,10 +836,12 @@ class Tabesh_Product_Pricing {
 
 		// Debug log result
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			error_log( sprintf(
-				'Tabesh: UPDATE result for disabling pricing_engine_v2_enabled: %s',
-				$result === false ? 'FAILED' : 'SUCCESS'
-			) );
+			error_log(
+				sprintf(
+					'Tabesh: UPDATE result for disabling pricing_engine_v2_enabled: %s',
+					$result === false ? 'FAILED' : 'SUCCESS'
+				)
+			);
 			if ( $result === false ) {
 				error_log( 'Tabesh: Database error: ' . $wpdb->last_error );
 			}
