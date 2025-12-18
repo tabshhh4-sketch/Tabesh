@@ -1877,6 +1877,16 @@ final class Tabesh {
 		}
 
 		// Use constraint manager for enhanced options.
+		if ( ! class_exists( 'Tabesh_Constraint_Manager' ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => __( 'Constraint Manager موجود نیست', 'tabesh' ),
+				),
+				500
+			);
+		}
+
 		$constraint_manager = new Tabesh_Constraint_Manager();
 		$options            = $constraint_manager->get_allowed_options( array(), $book_size );
 
@@ -1942,6 +1952,16 @@ final class Tabesh {
 		}
 
 		// Use constraint manager.
+		if ( ! class_exists( 'Tabesh_Constraint_Manager' ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => __( 'Constraint Manager موجود نیست', 'tabesh' ),
+				),
+				500
+			);
+		}
+
 		$constraint_manager = new Tabesh_Constraint_Manager();
 		$options            = $constraint_manager->get_allowed_options( $current_selection, $book_size );
 
@@ -2002,6 +2022,16 @@ final class Tabesh {
 		}
 
 		// Use constraint manager for validation.
+		if ( ! class_exists( 'Tabesh_Constraint_Manager' ) ) {
+			return new WP_REST_Response(
+				array(
+					'success' => false,
+					'message' => __( 'Constraint Manager موجود نیست', 'tabesh' ),
+				),
+				500
+			);
+		}
+
 		$constraint_manager = new Tabesh_Constraint_Manager();
 		$validation         = $constraint_manager->validate_combination( $params );
 

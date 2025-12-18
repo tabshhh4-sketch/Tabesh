@@ -396,13 +396,21 @@
         // Show specific step
         function showStep(stepNum) {
             document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-            document.getElementById(`step${stepNum}`).classList.add('active');
-            currentStepNum = stepNum;
+            
+            // Handle result as special case
+            if (stepNum === 'result' || stepNum > 4) {
+                document.getElementById('result').classList.add('active');
+                currentStepNum = 5;
+            } else {
+                document.getElementById(`step${stepNum}`).classList.add('active');
+                currentStepNum = stepNum;
+            }
         }
 
         // Update progress bar
         function updateProgress() {
-            const progress = (currentStepNum / 4) * 100;
+            // Cap progress at 100% (4 steps max)
+            const progress = Math.min((currentStepNum / 4) * 100, 100);
             document.getElementById('progressBar').style.width = progress + '%';
         }
 
@@ -487,7 +495,7 @@
                 };
                 
                 displayResult(result);
-                showStep(5);
+                showStep('result');
                 updateProgress();
             }, 1000);
         }

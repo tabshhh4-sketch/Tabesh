@@ -703,8 +703,10 @@ class Tabesh_Order {
 
 			// If calculation was successful (no error), add allowed next options.
 			if ( ! isset( $result['error'] ) || ! $result['error'] ) {
-				// Check if V2 is active and add next options.
-				if ( Tabesh_Pricing_Engine::is_v2_active() && ! empty( $params['book_size'] ) ) {
+				// Check if V2 is active and constraint manager exists.
+				if ( Tabesh_Pricing_Engine::is_v2_active() &&
+					! empty( $params['book_size'] ) &&
+					class_exists( 'Tabesh_Constraint_Manager' ) ) {
 					$constraint_manager = new Tabesh_Constraint_Manager();
 
 					// Build current selection from params for next step filtering.
