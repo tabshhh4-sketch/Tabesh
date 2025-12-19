@@ -1346,7 +1346,8 @@ class Tabesh_Pricing_Engine {
 			// CRITICAL FIX: Only mark as corrupted if decoding fails completely.
 			// Do NOT compare against product parameters here as that causes valid
 			// matrices to be deleted when book_sizes is empty or being reconfigured.
-			if ( false === $decoded || empty( $decoded ) ) {
+			// Note: Check for empty string specifically, not empty() which treats '0' as empty.
+			if ( false === $decoded || '' === $decoded ) {
 				// Invalid base64 encoding - this is truly corrupted.
 				$corrupted_keys[] = $setting_key;
 
