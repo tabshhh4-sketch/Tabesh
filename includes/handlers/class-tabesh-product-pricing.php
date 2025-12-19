@@ -177,7 +177,7 @@ class Tabesh_Product_Pricing {
 			if ( $has_papers && $has_bindings ) {
 				echo '<div class="tabesh-success">' . esc_html__( '✓ تنظیمات قیمت‌گذاری با موفقیت ذخیره شد', 'tabesh' ) . '</div>';
 			} else {
-				echo '<div class="tabesh-success" style="background: #fff3cd; border-color: #ffc107; color: #856404;">' .
+				echo '<div class="tabesh-warning">' .
 					esc_html__( '✓ ماتریس قیمت ذخیره شد، اما تا تکمیل تنظیمات در فرم سفارش نمایش داده نخواهد شد', 'tabesh' ) .
 					'</div>';
 			}

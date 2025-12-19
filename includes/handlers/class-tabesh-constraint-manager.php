@@ -530,13 +530,13 @@ class Tabesh_Constraint_Manager {
 						}
 					}
 				} elseif ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-						error_log(
-							sprintf(
-								'Tabesh: Size "%s" has pricing but returned error: %s',
-								$size,
-								$allowed_options['message'] ?? 'unknown error'
-							)
-						);
+					error_log(
+						sprintf(
+							'Tabesh: Size "%s" has pricing but returned error: %s',
+							$size,
+							$allowed_options['message'] ?? 'unknown error'
+						)
+					);
 				}
 			} else {
 				// Include sizes without pricing but mark them as disabled.
