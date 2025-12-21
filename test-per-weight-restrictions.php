@@ -193,8 +193,9 @@ function test_available_weights_filtering() {
 	echo "  Available weights: " . implode( ', ', $available_weights ) . "\n";
 	echo "  Expected: 100, 120 (80 should be excluded)\n";
 	
+	// Note: Weights are integers in the array from foreach over array keys
 	$success = count( $available_weights ) === 2 
-		&& in_array( 100, $available_weights, false ) // Use loose comparison since keys might be integers
+		&& in_array( 100, $available_weights, false )
 		&& in_array( 120, $available_weights, false )
 		&& ! in_array( 80, $available_weights, false );
 	

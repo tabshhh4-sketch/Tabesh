@@ -402,14 +402,6 @@ class Tabesh_Product_Pricing {
 						continue;
 					}
 
-					// Initialize this weight if not already done (defensive programming)
-					if ( ! isset( $enabled_combinations[ $paper_type ][ $weight ] ) ) {
-						$enabled_combinations[ $paper_type ][ $weight ] = array(
-							'bw'    => false,
-							'color' => false,
-						);
-					}
-
 					foreach ( $print_types_data as $print_type => $value ) {
 						$print_type = sanitize_text_field( $print_type );
 
