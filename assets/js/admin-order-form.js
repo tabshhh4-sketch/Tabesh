@@ -506,12 +506,12 @@
         // Validate coverWeights is an array
         if (!Array.isArray(coverWeights) || coverWeights.length === 0) {
             // No cover weights available for this binding type
-            $coverSelect.append('<option value="">' + escapeHtml(tabeshAdminOrderForm.strings.selectOption) + '</option>');
+            $coverSelect.append('<option value="">' + tabeshAdminOrderForm.strings.selectOption + '</option>');
             return;
         }
 
         // Add default empty option
-        $coverSelect.append('<option value="">' + escapeHtml(tabeshAdminOrderForm.strings.selectOption) + '</option>');
+        $coverSelect.append('<option value="">' + tabeshAdminOrderForm.strings.selectOption + '</option>');
 
         // Add allowed cover weights
         coverWeights.forEach(function(weightInfo) {
@@ -520,8 +520,8 @@
                 const weight = String(weightInfo.weight); // Convert to string
                 $coverSelect.append(
                     $('<option></option>')
-                        .val(escapeHtml(weight))
-                        .text(escapeHtml(weight))
+                        .val(weight)
+                        .text(weight)
                 );
             }
         });
