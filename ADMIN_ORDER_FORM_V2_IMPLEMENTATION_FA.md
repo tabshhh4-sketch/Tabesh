@@ -407,7 +407,7 @@ FOUND 0 ERRORS AND 4 WARNINGS
 
 **استفاده از shortcode:**
 ```
-[tabesh_admin_order_form_v2]
+[tabesh_admin_order_form]
 ```
 
 **با عنوان سفارشی:**
@@ -417,7 +417,7 @@ FOUND 0 ERRORS AND 4 WARNINGS
 
 **در قالب:**
 ```php
-<?php echo do_shortcode('[tabesh_admin_order_form_v2]'); ?>
+<?php echo do_shortcode('[tabesh_admin_order_form]'); ?>
 ```
 
 ---

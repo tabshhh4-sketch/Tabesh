@@ -76,13 +76,13 @@ The form requires administrator-level access:
 Add this shortcode to any page or post:
 
 ```
-[tabesh_admin_order_form_v2]
+[tabesh_admin_order_form]
 ```
 
 این شورتکد را به هر صفحه یا پستی اضافه کنید:
 
 ```
-[tabesh_admin_order_form_v2]
+[tabesh_admin_order_form]
 ```
 
 ### با عنوان سفارشی / With Custom Title
@@ -94,7 +94,7 @@ Add this shortcode to any page or post:
 ### در قالب / In Theme Template
 
 ```php
-<?php echo do_shortcode('[tabesh_admin_order_form_v2]'); ?>
+<?php echo do_shortcode('[tabesh_admin_order_form]'); ?>
 ```
 
 ---

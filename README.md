@@ -99,16 +99,10 @@ Show admin dashboard overview (requires manage_woocommerce capability):
 [tabesh_admin_dashboard]
 ```
 
-#### Admin Order Form (Legacy)
-Admin-specific order form with customer selection (requires administrator role):
+#### Admin Order Form
+Advanced admin order form with V2 pricing engine and customer management (requires administrator role):
 ```
 [tabesh_admin_order_form]
-```
-
-#### Admin Order Form V2 (New - Recommended)
-Advanced admin order form with V2 pricing engine and customer management:
-```
-[tabesh_admin_order_form_v2]
 ```
 **Features:**
 - V2 matrix-based pricing engine integration
