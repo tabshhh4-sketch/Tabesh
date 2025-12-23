@@ -502,8 +502,11 @@
 
         // Clear current options and add default empty option
         $coverSelect.empty();
-        const defaultOption = '<option value="">' + tabeshAdminOrderForm.strings.selectOption + '</option>';
-        $coverSelect.append(defaultOption);
+        $coverSelect.append(
+            $('<option></option>')
+                .val('')
+                .text(tabeshAdminOrderForm.strings.selectOption)
+        );
 
         // Validate coverWeights is an array
         if (!Array.isArray(coverWeights) || coverWeights.length === 0) {
@@ -514,6 +517,7 @@
         // Add allowed cover weights
         coverWeights.forEach(function(weightInfo) {
             // Validate weightInfo structure and weight value
+            // Note: typeof null returns 'object', so explicit null check is needed
             if (weightInfo && typeof weightInfo === 'object' && 
                 typeof weightInfo.weight !== 'undefined' && weightInfo.weight !== null) {
                 const weight = String(weightInfo.weight); // Convert to string for safety
