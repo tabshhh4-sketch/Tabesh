@@ -1172,8 +1172,11 @@ $admin = $tabesh->admin;
                         <td>
                             <select id="ai_gemini_model" name="ai_gemini_model" class="regular-text">
                                 <?php $current_model = Tabesh_AI_Config::get('gemini_model', 'gemini-2.0-flash-exp'); ?>
+                                <option value="gemini-2.5-flash" <?php selected($current_model, 'gemini-2.5-flash'); ?>>
+                                    Gemini 2.5 Flash (جدید - توصیه می‌شود)
+                                </option>
                                 <option value="gemini-2.0-flash-exp" <?php selected($current_model, 'gemini-2.0-flash-exp'); ?>>
-                                    Gemini 2.0 Flash (توصیه می‌شود)
+                                    Gemini 2.0 Flash (آزمایشی)
                                 </option>
                                 <option value="gemini-1.5-flash" <?php selected($current_model, 'gemini-1.5-flash'); ?>>
                                     Gemini 1.5 Flash
