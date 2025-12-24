@@ -194,6 +194,53 @@ body.ai-browser-open {
 	transform: rotate(90deg);
 }
 
+.tabesh-ai-browser-minimize {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.2);
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+	flex-shrink: 0;
+	margin-left: 8px;
+}
+
+.tabesh-ai-browser-minimize:hover {
+	background: rgba(255, 255, 255, 0.3);
+	transform: scale(1.1);
+}
+
+/* Minimized state */
+.tabesh-ai-browser-sidebar.minimized {
+	height: 80px;
+	width: 350px;
+	bottom: 20px;
+	right: 20px;
+	top: auto;
+	border-radius: 16px;
+	overflow: hidden;
+}
+
+.tabesh-ai-browser-sidebar.minimized .tabesh-ai-browser-messages,
+.tabesh-ai-browser-sidebar.minimized .tabesh-ai-browser-typing,
+.tabesh-ai-browser-sidebar.minimized .tabesh-ai-browser-input-wrapper {
+	display: none;
+}
+
+.tabesh-ai-browser-sidebar.minimized .tabesh-ai-browser-header {
+	cursor: pointer;
+	border-radius: 16px;
+}
+
+.tabesh-ai-browser-sidebar.minimized .tabesh-ai-browser-header:hover {
+	background: linear-gradient(135deg, #7689f1 0%, #8557ac 100%);
+}
+
 /* Messages Container */
 .tabesh-ai-browser-messages {
 	flex: 1;
