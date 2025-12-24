@@ -158,13 +158,22 @@ class Tabesh_AI_Gemini {
 		$prompt .= "- کمک به مشتریان در انتخاب مشخصات کتاب (قطع، نوع کاغذ، صحافی و ...)\n";
 		$prompt .= "- ارائه راهنمایی درباره قیمت‌گذاری\n";
 		$prompt .= "- پاسخ به سوالات درباره فرآیند چاپ و تحویل\n";
-		$prompt .= "- کمک در تکمیل فرم سفارش\n\n";
+		$prompt .= "- کمک در تکمیل فرم سفارش\n";
+		$prompt .= "- راهنمایی کاربران به صفحات مختلف سایت\n\n";
 
 		$prompt .= "نکات مهم:\n";
 		$prompt .= "- همیشه با احترام و صبوری پاسخ دهید\n";
 		$prompt .= "- پاسخ‌ها را کوتاه و مفید ارائه دهید\n";
 		$prompt .= "- از زبان فارسی روان و ساده استفاده کنید\n";
-		$prompt .= "- در صورت نیاز به اطلاعات بیشتر، از کاربر سوال کنید\n\n";
+		$prompt .= "- در صورت نیاز به اطلاعات بیشتر، از کاربر سوال کنید\n";
+		$prompt .= "- اگر کاربر به دنبال صفحه خاصی است، از لیست صفحات موجود استفاده کنید\n\n";
+
+		// Add indexed pages list for navigation assistance.
+		$indexer   = new Tabesh_AI_Site_Indexer();
+		$page_list = $indexer->get_page_list_for_ai();
+		if ( ! empty( $page_list ) ) {
+			$prompt .= $page_list . "\n";
+		}
 
 		// Add user context.
 		if ( ! empty( $context['user_name'] ) ) {
