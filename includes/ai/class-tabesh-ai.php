@@ -29,7 +29,7 @@ class Tabesh_AI {
 	 */
 	public function __construct() {
 		$this->init_hooks();
-		
+
 		// Initialize Gemini driver if in direct mode.
 		if ( Tabesh_AI_Config::get_mode() === Tabesh_AI_Config::MODE_DIRECT ) {
 			$this->gemini = new Tabesh_AI_Gemini();
@@ -227,7 +227,7 @@ class Tabesh_AI {
 	 * @return array|WP_Error Response or error.
 	 */
 	private function handle_client_request( $message, $context ) {
-		$server_url = Tabesh_AI_Config::get( 'server_url', '' );
+		$server_url     = Tabesh_AI_Config::get( 'server_url', '' );
 		$server_api_key = Tabesh_AI_Config::get( 'server_api_key', '' );
 
 		if ( empty( $server_url ) ) {
@@ -275,10 +275,13 @@ class Tabesh_AI {
 	/**
 	 * REST API: Get form data endpoint
 	 *
-	 * @param WP_REST_Request $request Request object.
+	 * @param WP_REST_Request $request Request object (unused but required by REST API).
 	 * @return WP_REST_Response|WP_Error Response or error.
 	 */
 	public function rest_get_form_data( $request ) {
+		// Suppress unused parameter warning - required by REST API signature.
+		unset( $request );
+
 		$form_data = array();
 
 		// Get available options.
@@ -309,10 +312,13 @@ class Tabesh_AI {
 	/**
 	 * Render chat interface shortcode
 	 *
-	 * @param array $atts Shortcode attributes.
+	 * @param array $atts Shortcode attributes (unused but required by shortcode API).
 	 * @return string Chat interface HTML.
 	 */
 	public function render_chat_interface( $atts ) {
+		// Suppress unused parameter warning - required by shortcode API signature.
+		unset( $atts );
+
 		if ( ! Tabesh_AI_Config::is_enabled() ) {
 			return '<div class="tabesh-ai-disabled">' . esc_html__( 'سیستم هوش مصنوعی غیرفعال است', 'tabesh' ) . '</div>';
 		}
@@ -326,7 +332,7 @@ class Tabesh_AI {
 
 		// Get current user info.
 		$current_user = wp_get_current_user();
-		$user_name = $current_user && $current_user->exists() ? $current_user->display_name : __( 'مهمان', 'tabesh' );
+		$user_name    = $current_user && $current_user->exists() ? $current_user->display_name : __( 'مهمان', 'tabesh' );
 
 		ob_start();
 		include TABESH_PLUGIN_DIR . 'templates/frontend/ai-chat.php';
@@ -357,14 +363,14 @@ class Tabesh_AI {
 			'tabesh-ai-chat',
 			'tabeshAI',
 			array(
-				'ajaxUrl'    => rest_url( TABESH_REST_NAMESPACE . '/ai' ),
-				'nonce'      => wp_create_nonce( 'wp_rest' ),
-				'strings'    => array(
-					'sendButton'       => __( 'ارسال', 'tabesh' ),
-					'placeholder'      => __( 'پیام خود را بنویسید...', 'tabesh' ),
-					'errorMessage'     => __( 'خطا در ارسال پیام', 'tabesh' ),
-					'connecting'       => __( 'در حال اتصال...', 'tabesh' ),
-					'welcomeMessage'   => __( 'سلام! چطور می‌تونم کمکتون کنم؟', 'tabesh' ),
+				'ajaxUrl' => rest_url( TABESH_REST_NAMESPACE . '/ai' ),
+				'nonce'   => wp_create_nonce( 'wp_rest' ),
+				'strings' => array(
+					'sendButton'     => __( 'ارسال', 'tabesh' ),
+					'placeholder'    => __( 'پیام خود را بنویسید...', 'tabesh' ),
+					'errorMessage'   => __( 'خطا در ارسال پیام', 'tabesh' ),
+					'connecting'     => __( 'در حال اتصال...', 'tabesh' ),
+					'welcomeMessage' => __( 'سلام! چطور می‌تونم کمکتون کنم؟', 'tabesh' ),
 				),
 			)
 		);
@@ -383,6 +389,8 @@ class Tabesh_AI {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$value = $wpdb->get_var(
 			$wpdb->prepare(
+				// Note: Table name comes from $wpdb->prefix which is safe.
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				"SELECT setting_value FROM $table WHERE setting_key = %s",
 				$key
 			)

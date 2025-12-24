@@ -63,7 +63,7 @@ class Tabesh_AI_Gemini {
 
 		// Build request body.
 		$body = array(
-			'contents' => array(
+			'contents'         => array(
 				array(
 					'parts' => array(
 						array(

@@ -30,21 +30,21 @@ class Tabesh_AI_Config {
 	 * @var array
 	 */
 	private static $defaults = array(
-		'enabled'                => false,
-		'mode'                   => self::MODE_DIRECT,
-		'gemini_api_key'         => '',
-		'gemini_model'           => 'gemini-2.0-flash-exp',
-		'server_url'             => '',
-		'server_api_key'         => '',
-		'access_orders'          => true,
-		'access_users'           => false,
-		'access_pricing'         => true,
-		'access_woocommerce'     => false,
-		'cache_enabled'          => true,
-		'cache_ttl'              => 3600,
-		'max_tokens'             => 2048,
-		'temperature'            => 0.7,
-		'allowed_roles'          => array( 'administrator', 'shop_manager', 'customer' ),
+		'enabled'            => false,
+		'mode'               => self::MODE_DIRECT,
+		'gemini_api_key'     => '',
+		'gemini_model'       => 'gemini-2.0-flash-exp',
+		'server_url'         => '',
+		'server_api_key'     => '',
+		'access_orders'      => true,
+		'access_users'       => false,
+		'access_pricing'     => true,
+		'access_woocommerce' => false,
+		'cache_enabled'      => true,
+		'cache_ttl'          => 3600,
+		'max_tokens'         => 2048,
+		'temperature'        => 0.7,
+		'allowed_roles'      => array( 'administrator', 'shop_manager', 'customer' ),
 	);
 
 	/**
@@ -62,6 +62,8 @@ class Tabesh_AI_Config {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$result = $wpdb->get_var(
 			$wpdb->prepare(
+				// Note: Table name comes from $wpdb->prefix which is safe.
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				"SELECT setting_value FROM $table WHERE setting_key = %s",
 				$setting_key
 			)
@@ -103,6 +105,8 @@ class Tabesh_AI_Config {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$exists = $wpdb->get_var(
 			$wpdb->prepare(
+				// Note: Table name comes from $wpdb->prefix which is safe.
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				"SELECT COUNT(*) FROM $table WHERE setting_key = %s",
 				$setting_key
 			)
@@ -156,7 +160,7 @@ class Tabesh_AI_Config {
 	 */
 	public static function get_mode() {
 		$mode = self::get( 'mode', self::MODE_DIRECT );
-		
+
 		// Validate mode.
 		$valid_modes = array( self::MODE_DIRECT, self::MODE_SERVER, self::MODE_CLIENT );
 		if ( ! in_array( $mode, $valid_modes, true ) ) {

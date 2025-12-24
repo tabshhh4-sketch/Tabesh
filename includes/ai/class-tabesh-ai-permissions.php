@@ -194,9 +194,9 @@ class Tabesh_AI_Permissions {
 			return;
 		}
 
-		$user = get_user_by( 'id', $user_id );
+		$user     = get_user_by( 'id', $user_id );
 		$username = $user ? $user->user_login : 'unknown';
-		$status = $granted ? 'GRANTED' : 'DENIED';
+		$status   = $granted ? 'GRANTED' : 'DENIED';
 
 		error_log(
 			sprintf(
