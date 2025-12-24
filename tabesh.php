@@ -289,6 +289,9 @@ final class Tabesh {
 
 		add_action( 'plugins_loaded', array( $this, 'init' ), 0 );
 		add_action( 'init', array( $this, 'load_textdomain' ) );
+
+		// Register AI site indexing cron job
+		add_action( 'tabesh_ai_index_site_pages', array( 'Tabesh_AI_Site_Indexer', 'run_scheduled_indexing' ) );
 	}
 
 	/**
@@ -382,6 +385,9 @@ final class Tabesh {
 		// Set default options
 		$this->set_default_options();
 
+		// Schedule AI site indexing cron job
+		Tabesh_AI_Site_Indexer::schedule_indexing();
+
 		// Set flag to flush rewrite rules on next load
 		update_option( 'tabesh_flush_rewrite_rules', 'yes' );
 
@@ -393,6 +399,9 @@ final class Tabesh {
 	 * Plugin deactivation
 	 */
 	public function deactivate() {
+		// Unschedule AI site indexing cron job
+		Tabesh_AI_Site_Indexer::unschedule_indexing();
+
 		// Flush rewrite rules
 		flush_rewrite_rules();
 	}
