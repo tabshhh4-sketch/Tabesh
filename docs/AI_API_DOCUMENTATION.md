@@ -577,8 +577,9 @@ Tabesh_AI_Config::set('temperature', 0.3); // More focused responses
 
 Choose appropriate model for your needs:
 
-- **gemini-2.0-flash-exp**: Fast, cost-effective (recommended)
-- **gemini-1.5-flash**: Balanced performance
+- **gemini-2.5-flash**: Latest model, excellent performance (recommended)
+- **gemini-2.0-flash-exp**: Fast, experimental features
+- **gemini-1.5-flash**: Balanced performance, stable
 - **gemini-1.5-pro**: High quality, slower, more expensive
 
 ## Security Best Practices
@@ -622,7 +623,7 @@ Logs will be written to `wp-content/debug.log`.
 ## Version History
 
 - **1.0.0** (2025-01-24): Initial release
-  - Support for Gemini 2.0 Flash
+  - Support for Gemini 2.5 Flash, 2.0 Flash, 1.5 Flash, and 1.5 Pro
   - Three operation modes (Direct/Server/Client)
   - Persian language support
   - RTL interface
