@@ -16,7 +16,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	<div class="tabesh-ai-chat-header">
 		<div class="tabesh-ai-chat-avatar">
 			<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h-3a4 4 0 0 0-4-4h-1v1.27c.6.34 1 .99 1 1.73a2 2 0 1 1-2-2 2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V16h-1a4 4 0 0 0-4 4H5a7 7 0 0 1 7-7h1v-1.27A2 2 0 0 1 12 10a2 2 0 1 1 0 4 2 2 0 0 1-2-2c0-.74.4-1.39 1-1.73V9h-1a7 7 0 0 1-7 7H0a7 7 0 0 1 7-7h1V7.73A2 2 0 0 1 7 6a2 2 0 1 1 2 2 2 2 0 0 1-2-2c0-.74.4-1.39 1-1.73V4c0-1.1.9-2 2-2z"/>
+				<rect x="4" y="4" width="16" height="16" rx="2"></rect>
+				<circle cx="9" cy="10" r="1"></circle>
+				<circle cx="15" cy="10" r="1"></circle>
+				<path d="M9 15h6"></path>
 			</svg>
 		</div>
 		<div class="tabesh-ai-chat-info">
