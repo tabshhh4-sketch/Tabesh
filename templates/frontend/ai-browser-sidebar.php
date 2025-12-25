@@ -47,11 +47,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<?php echo esc_html__( 'آنلاین', 'tabesh' ); ?>
 			</p>
 		</div>
-		<button class="tabesh-ai-browser-minimize" id="tabesh-ai-browser-minimize" aria-label="<?php echo esc_attr__( 'کوچک کردن', 'tabesh' ); ?>">
-			<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-				<line x1="5" y1="12" x2="19" y2="12"></line>
-			</svg>
-		</button>
 		<button class="tabesh-ai-browser-close" id="tabesh-ai-browser-close" aria-label="<?php echo esc_attr__( 'بستن', 'tabesh' ); ?>">
 			<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 				<line x1="18" y1="6" x2="6" y2="18"></line>

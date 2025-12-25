@@ -289,60 +289,6 @@ class Tabesh_AI_User_Profile {
 	}
 
 	/**
-	 * Update entire chat history for user
-	 *
-	 * @param int   $user_id User ID.
-	 * @param array $chat_history Full chat history array.
-	 * @return bool True on success, false on failure.
-	 */
-	public function update_chat_history( $user_id, $chat_history ) {
-		global $wpdb;
-
-		$table_name = $wpdb->prefix . 'tabesh_ai_user_profiles';
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->update(
-			$table_name,
-			array(
-				'chat_history' => wp_json_encode( $chat_history ),
-				'updated_at'   => current_time( 'mysql' ),
-			),
-			array( 'user_id' => $user_id ),
-			array( '%s', '%s' ),
-			array( '%d' )
-		);
-
-		return $result !== false;
-	}
-
-	/**
-	 * Update entire chat history for guest
-	 *
-	 * @param string $guest_uuid Guest UUID.
-	 * @param array  $chat_history Full chat history array.
-	 * @return bool True on success, false on failure.
-	 */
-	public function update_guest_chat_history( $guest_uuid, $chat_history ) {
-		global $wpdb;
-
-		$table_name = $wpdb->prefix . 'tabesh_ai_guest_profiles';
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$result = $wpdb->update(
-			$table_name,
-			array(
-				'chat_history' => wp_json_encode( $chat_history ),
-				'updated_at'   => current_time( 'mysql' ),
-			),
-			array( 'guest_uuid' => $guest_uuid ),
-			array( '%s', '%s' ),
-			array( '%s' )
-		);
-
-		return $result !== false;
-	}
-
-	/**
 	 * Decode JSON fields in profile
 	 *
 	 * @param array $profile Profile data.

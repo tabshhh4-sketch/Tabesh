@@ -11,15 +11,10 @@
 
     // State management
     let isOpen = false;
-    let isMinimized = false;
     let isTyping = false;
     let guestUUID = null;
     let conversationState = 'greeting'; // greeting, profession, show_target, chat
     let userProfession = null;
-    let userInterests = [];
-    let interactionCount = 0;
-    let idleTimeout = null;
-    let lastInteractionTime = Date.now();
 
     /**
      * Initialize AI Browser
@@ -52,19 +47,6 @@
             closeSidebar();
         });
 
-        // Minimize button click
-        $('#tabesh-ai-browser-minimize').on('click', function(e) {
-            e.stopPropagation();
-            minimizeSidebar();
-        });
-
-        // Header click when minimized - restore
-        $('.tabesh-ai-browser-header').on('click', function() {
-            if (isMinimized) {
-                restoreSidebar();
-            }
-        });
-
         // Overlay click (mobile)
         $('#tabesh-ai-browser-overlay').on('click', function() {
             closeSidebar();
@@ -95,12 +77,6 @@
                 closeSidebar();
             }
         });
-
-        // Track user interactions for idle detection
-        $(document).on('click scroll mousemove keypress', trackUserActivity);
-
-        // Start idle detection timer
-        startIdleDetection();
     }
 
     /**
@@ -119,13 +95,10 @@
      */
     function openSidebar() {
         isOpen = true;
-        $('#tabesh-ai-browser-sidebar').addClass('active').removeClass('minimized');
+        $('#tabesh-ai-browser-sidebar').addClass('active');
         $('#tabesh-ai-browser-overlay').addClass('active');
         $('body').addClass('ai-browser-open');
         $('#tabesh-ai-browser-input').focus();
-        
-        // Hide notification badge
-        hideNotificationBadge();
 
         // Track page view
         if (window.tabeshAITracker) {
@@ -141,169 +114,9 @@
      */
     function closeSidebar() {
         isOpen = false;
-        isMinimized = false;
-        $('#tabesh-ai-browser-sidebar').removeClass('active minimized');
+        $('#tabesh-ai-browser-sidebar').removeClass('active');
         $('#tabesh-ai-browser-overlay').removeClass('active');
         $('body').removeClass('ai-browser-open');
-    }
-
-    /**
-     * Minimize sidebar
-     */
-    function minimizeSidebar() {
-        isMinimized = true;
-        $('#tabesh-ai-browser-sidebar').addClass('minimized');
-        
-        // Track minimization
-        if (window.tabeshAITracker) {
-            window.tabeshAITracker.trackEvent('sidebar_minimized', {
-                page_url: window.location.href
-            });
-        }
-    }
-
-    /**
-     * Restore minimized sidebar
-     */
-    function restoreSidebar() {
-        isMinimized = false;
-        $('#tabesh-ai-browser-sidebar').removeClass('minimized');
-    }
-
-    /**
-     * Track user activity
-     */
-    function trackUserActivity() {
-        lastInteractionTime = Date.now();
-        interactionCount++;
-        
-        // Clear idle timeout
-        if (idleTimeout) {
-            clearTimeout(idleTimeout);
-        }
-        
-        // Restart idle detection
-        startIdleDetection();
-    }
-
-    /**
-     * Start idle detection
-     */
-    function startIdleDetection() {
-        // Clear existing timeout
-        if (idleTimeout) {
-            clearTimeout(idleTimeout);
-        }
-        
-        // Set timeout for 30 seconds of inactivity
-        idleTimeout = setTimeout(function() {
-            handleIdleUser();
-        }, 30000);
-    }
-
-    /**
-     * Handle idle user - offer proactive help
-     */
-    function handleIdleUser() {
-        // Only show if sidebar is not open and user has been on page for a while
-        if (!isOpen && interactionCount > 5) {
-            showNotificationBadge(1);
-            
-            // Track idle state
-            if (window.tabeshAITracker) {
-                window.tabeshAITracker.trackEvent('user_idle', {
-                    page_url: window.location.href,
-                    idle_duration: 30,
-                    interaction_count: interactionCount
-                });
-            }
-            
-            // Check if user seems confused (many interactions but still on same page)
-            if (interactionCount > 20) {
-                // User seems stuck, offer highlighted tour
-                setTimeout(function() {
-                    offerProactiveHelp();
-                }, 2000);
-            }
-        }
-    }
-
-    /**
-     * Offer proactive help when user seems stuck
-     */
-    function offerProactiveHelp() {
-        if (!isOpen) {
-            openSidebar();
-            
-            // Add proactive message
-            setTimeout(function() {
-                const helpMessage = 'سلام! متوجه شدم که شاید کمک نیاز دارید. می‌تونم راهنماییتون کنم؟ 😊';
-                addMessage(helpMessage, 'bot');
-                
-                // Show quick action buttons
-                const actionsHtml = `
-                    <button class="message-action-btn quick-help" data-action="tour">راهنمای صفحه</button>
-                    <button class="message-action-btn quick-help" data-action="help">سوال دارم</button>
-                `;
-                addMessage('', 'bot', actionsHtml);
-                
-                // Attach event listeners
-                $('.message-action-btn.quick-help[data-action="tour"]').on('click', function() {
-                    startPageTour();
-                });
-                
-                $('.message-action-btn.quick-help[data-action="help"]').on('click', function() {
-                    conversationState = 'chat';
-                    addMessage('البته! چه کمکی می‌تونم بکنم؟', 'bot');
-                });
-            }, 500);
-        }
-    }
-
-    /**
-     * Start contextual page tour
-     */
-    function startPageTour() {
-        // Detect current page and start appropriate tour
-        const currentUrl = window.location.href;
-        
-        if (currentUrl.includes('order-form') || $('#book_title').length) {
-            if (window.tabeshAITourGuide) {
-                window.tabeshAITourGuide.startTour('order-form');
-            }
-            addMessage('راهنمای تکمیل فرم سفارش را برایتان آغاز می‌کنم!', 'bot');
-        } else if (currentUrl.includes('cart') || $('.woocommerce-cart').length) {
-            if (window.tabeshAITourGuide) {
-                window.tabeshAITourGuide.highlightElement('.woocommerce-cart', {
-                    pulse: true,
-                    tooltip: 'سبد خرید شما'
-                });
-            }
-            addMessage('سبد خرید شما را برایتان نشان دادم!', 'bot');
-        } else {
-            addMessage('در این صفحه راهنمای ویژه‌ای ندارم. سوالی دارید؟', 'bot');
-        }
-        
-        closeSidebar();
-    }
-
-    /**
-     * Show notification badge
-     */
-    function showNotificationBadge(count) {
-        const $badge = $('.tabesh-ai-browser-notification-badge');
-        if (count > 0) {
-            $badge.text(count).fadeIn();
-        } else {
-            $badge.fadeOut();
-        }
-    }
-
-    /**
-     * Hide notification badge
-     */
-    function hideNotificationBadge() {
-        showNotificationBadge(0);
     }
 
     /**
@@ -360,90 +173,7 @@
         // Save profession to backend
         saveProfession(profession);
 
-        // Ask follow-up questions based on profession
-        setTimeout(function() {
-            askProfessionFollowUp(profession);
-        }, 500);
-
-        conversationState = 'interests';
-    }
-
-    /**
-     * Ask follow-up questions based on profession
-     */
-    function askProfessionFollowUp(profession) {
-        let followUpMessage = '';
-        let interestButtons = [];
-
-        switch(profession) {
-            case 'buyer':
-                followUpMessage = 'عالی! چه نوع کتابی می‌خواهید چاپ کنید؟';
-                interestButtons = [
-                    { text: 'رمان و داستان', value: 'fiction' },
-                    { text: 'کتاب درسی', value: 'textbook' },
-                    { text: 'کتاب کودک', value: 'children' },
-                    { text: 'سایر', value: 'other' }
-                ];
-                break;
-            case 'author':
-                followUpMessage = 'خوشحالم از آشناییتون! چه موضوعی می‌نویسید؟';
-                interestButtons = [
-                    { text: 'ادبیات و شعر', value: 'literature' },
-                    { text: 'علمی و آموزشی', value: 'educational' },
-                    { text: 'کودک و نوجوان', value: 'youth' },
-                    { text: 'سایر', value: 'other' }
-                ];
-                break;
-            case 'publisher':
-                followUpMessage = 'خوش آمدید! چه تعداد عنوان در سال منتشر می‌کنید؟';
-                interestButtons = [
-                    { text: 'کمتر از 10 عنوان', value: 'small' },
-                    { text: '10 تا 50 عنوان', value: 'medium' },
-                    { text: 'بیشتر از 50 عنوان', value: 'large' },
-                    { text: 'تازه شروع کرده‌ام', value: 'startup' }
-                ];
-                break;
-            case 'printer':
-                followUpMessage = 'سلام! چه نوع خدماتی ارائه می‌دهید؟';
-                interestButtons = [
-                    { text: 'چاپ افست', value: 'offset' },
-                    { text: 'چاپ دیجیتال', value: 'digital' },
-                    { text: 'صحافی', value: 'binding' },
-                    { text: 'همه موارد', value: 'all' }
-                ];
-                break;
-        }
-
-        addMessage(followUpMessage, 'bot');
-
-        // Add interest buttons
-        const actionsHtml = interestButtons.map(btn => 
-            `<button class="message-action-btn interest-btn" data-interest="${btn.value}">${btn.text}</button>`
-        ).join('');
-
-        addMessage('', 'bot', actionsHtml);
-
-        // Add event listeners
-        $('.message-action-btn.interest-btn').on('click', function() {
-            const interest = $(this).data('interest');
-            handleInterestSelection(interest);
-        });
-    }
-
-    /**
-     * Handle interest selection
-     */
-    function handleInterestSelection(interest) {
-        userInterests.push(interest);
-
-        // Disable buttons
-        $('.message-action-btn.interest-btn').prop('disabled', true).css('opacity', '0.5');
-
-        // Add user's selection
-        const interestText = $(`.message-action-btn.interest-btn[data-interest="${interest}"]`).text();
-        addMessage(interestText, 'user');
-
-        // Save interest and ask if they want navigation
+        // Show confirmation and offer to show target
         setTimeout(function() {
             addMessage(tabeshAIBrowser.strings.show_target, 'bot');
             showYesNoButtons();
@@ -610,11 +340,6 @@
 
         $messages.append(messageHtml);
         scrollToBottom();
-        
-        // Save to chat history (only actual text messages, not action buttons)
-        if (text && text.length > 0) {
-            saveMessageToHistory(text, type === 'user' ? 'user' : 'assistant');
-        }
     }
 
     /**
@@ -716,104 +441,9 @@
             success: function(response) {
                 if (response.success && response.profile) {
                     userProfession = response.profile.profession;
-                    userInterests = response.profile.interests || [];
-                    
-                    // Load chat history if available
-                    if (response.profile.chat_history) {
-                        loadChatHistory(response.profile.chat_history);
-                    }
                 }
             }
         });
-    }
-
-    /**
-     * Load chat history from profile
-     */
-    function loadChatHistory(chatHistory) {
-        // Only show last 5 messages to avoid clutter
-        const recentHistory = chatHistory.slice(-5);
-        
-        // Clear existing messages except welcome
-        $('#tabesh-ai-browser-messages').empty();
-        
-        // Add history messages
-        recentHistory.forEach(function(msg) {
-            const msgType = msg.role === 'user' ? 'user' : 'bot';
-            addMessage(msg.content, msgType);
-        });
-        
-        // If history exists, skip welcome and go straight to chat
-        if (recentHistory.length > 0) {
-            conversationState = 'chat';
-        }
-    }
-
-    /**
-     * Save message to chat history
-     */
-    function saveMessageToHistory(message, role) {
-        // Store in localStorage for quick access
-        const historyKey = 'tabesh_chat_history_' + guestUUID;
-        let history = [];
-        
-        try {
-            const stored = localStorage.getItem(historyKey);
-            if (stored) {
-                history = JSON.parse(stored);
-            }
-        } catch (e) {
-            // Ignore parsing errors
-        }
-        
-        // Add new message
-        history.push({
-            content: message,
-            role: role,
-            timestamp: Date.now()
-        });
-        
-        // Keep only last 20 messages
-        if (history.length > 20) {
-            history = history.slice(-20);
-        }
-        
-        // Save back
-        try {
-            localStorage.setItem(historyKey, JSON.stringify(history));
-        } catch (e) {
-            // Ignore storage errors
-        }
-        
-        // Also send to backend periodically
-        saveChatHistoryToBackend(history);
-    }
-
-    /**
-     * Save chat history to backend
-     */
-    let historySaveTimer = null;
-    function saveChatHistoryToBackend(history) {
-        // Debounce backend saves
-        if (historySaveTimer) {
-            clearTimeout(historySaveTimer);
-        }
-        
-        historySaveTimer = setTimeout(function() {
-            $.ajax({
-                url: tabeshAIBrowser.ajaxUrl + '/ai/browser/save-history',
-                method: 'POST',
-                headers: {
-                    'X-WP-Nonce': tabeshAIBrowser.nonce
-                },
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    guest_uuid: guestUUID,
-                    chat_history: history
-                }),
-                async: true
-            });
-        }, 5000);
     }
 
     /**

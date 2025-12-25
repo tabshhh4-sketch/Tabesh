@@ -159,28 +159,6 @@ class Tabesh_AI_Browser {
 				),
 			)
 		);
-
-		// Save chat history.
-		register_rest_route(
-			TABESH_REST_NAMESPACE,
-			'/ai/browser/save-history',
-			array(
-				'methods'             => 'POST',
-				'callback'            => array( $this, 'rest_save_chat_history' ),
-				'permission_callback' => '__return_true',
-				'args'                => array(
-					'guest_uuid'   => array(
-						'required'          => false,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
-					),
-					'chat_history' => array(
-						'required' => true,
-						'type'     => 'array',
-					),
-				),
-			)
-		);
 	}
 
 	/**
@@ -330,61 +308,6 @@ class Tabesh_AI_Browser {
 				'success'     => true,
 				'suggestions' => $suggestions,
 			)
-		);
-	}
-
-	/**
-	 * REST API: Save chat history
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 * @return WP_REST_Response Response.
-	 */
-	public function rest_save_chat_history( $request ) {
-		$guest_uuid   = $request->get_param( 'guest_uuid' );
-		$chat_history = $request->get_param( 'chat_history' );
-		$user_id      = get_current_user_id();
-
-		// Sanitize chat history.
-		$sanitized_history = array();
-		if ( is_array( $chat_history ) ) {
-			foreach ( $chat_history as $message ) {
-				if ( isset( $message['content'] ) && isset( $message['role'] ) ) {
-					$sanitized_history[] = array(
-						'content'   => sanitize_textarea_field( $message['content'] ),
-						'role'      => sanitize_text_field( $message['role'] ),
-						'timestamp' => isset( $message['timestamp'] ) ? absint( $message['timestamp'] ) : time(),
-					);
-				}
-			}
-		}
-
-		// Save to profile.
-		$profile_manager = new Tabesh_AI_User_Profile();
-		if ( $user_id ) {
-			$result = $profile_manager->update_chat_history( $user_id, $sanitized_history );
-		} elseif ( $guest_uuid ) {
-			$result = $profile_manager->update_guest_chat_history( $guest_uuid, $sanitized_history );
-		} else {
-			return new WP_Error(
-				'no_identifier',
-				__( 'شناسه کاربر یافت نشد', 'tabesh' ),
-				array( 'status' => 400 )
-			);
-		}
-
-		if ( $result ) {
-			return rest_ensure_response(
-				array(
-					'success' => true,
-					'message' => __( 'تاریخچه ذخیره شد', 'tabesh' ),
-				)
-			);
-		}
-
-		return new WP_Error(
-			'save_failed',
-			__( 'خطا در ذخیره تاریخچه', 'tabesh' ),
-			array( 'status' => 500 )
 		);
 	}
 
