@@ -4,6 +4,14 @@
  * @package Tabesh
  */
 
+/* CSS Custom Properties */
+:root {
+	--tabesh-chat-width-expanded: 450px;
+	--tabesh-chat-width-minimized: 60px;
+	--tabesh-chat-width-minimized-mobile: 50px;
+	--tabesh-chat-transition-duration: 0.3s;
+}
+
 /* Body wrapper for split-screen layout */
 body.tabesh-ai-split-active {
 	overflow: hidden;
@@ -11,18 +19,18 @@ body.tabesh-ai-split-active {
 
 /* Main content wrapper adjustment */
 body.tabesh-ai-split-active .tabesh-ai-main-content {
-	margin-right: 450px;
-	transition: margin-right 0.3s ease;
+	margin-right: var(--tabesh-chat-width-expanded);
+	transition: margin-right var(--tabesh-chat-transition-duration) ease;
 }
 
 body.tabesh-ai-split-minimized .tabesh-ai-main-content {
-	margin-right: 60px;
-	transition: margin-right 0.3s ease;
+	margin-right: var(--tabesh-chat-width-minimized);
+	transition: margin-right var(--tabesh-chat-transition-duration) ease;
 }
 
 body.tabesh-ai-split-hidden .tabesh-ai-main-content {
 	margin-right: 0;
-	transition: margin-right 0.3s ease;
+	transition: margin-right var(--tabesh-chat-transition-duration) ease;
 }
 
 /* Chat Toggle Button - Minimized State Bar */
@@ -30,14 +38,14 @@ body.tabesh-ai-split-hidden .tabesh-ai-main-content {
 	position: fixed;
 	top: 0;
 	left: 0;
-	width: 60px;
+	width: var(--tabesh-chat-width-minimized);
 	height: 100vh;
 	background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
 	border: none;
 	box-shadow: -2px 0 12px rgba(102, 126, 234, 0.3);
 	cursor: pointer;
 	z-index: 9998;
-	transition: all 0.3s ease;
+	transition: all var(--tabesh-chat-transition-duration) ease;
 	display: none;
 	flex-direction: column;
 	align-items: center;
@@ -48,6 +56,29 @@ body.tabesh-ai-split-hidden .tabesh-ai-main-content {
 
 .tabesh-ai-chat-toggle.minimized {
 	display: flex;
+}
+
+/* Show toggle button when hidden (as floating button) */
+.tabesh-ai-chat-toggle.hidden {
+	display: flex;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	top: auto;
+	bottom: 20px;
+	left: 20px;
+	padding: 0;
+	box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.tabesh-ai-chat-toggle.hidden:hover {
+	transform: scale(1.1);
+	box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+}
+
+.tabesh-ai-chat-toggle.hidden .tabesh-ai-toggle-text {
+	display: none;
 }
 
 .tabesh-ai-chat-toggle:hover {
@@ -86,7 +117,7 @@ body.tabesh-ai-split-hidden .tabesh-ai-main-content {
 	position: fixed;
 	top: 0;
 	left: 0;
-	width: 450px;
+	width: var(--tabesh-chat-width-expanded);
 	height: 100vh;
 	background: #fff;
 	box-shadow: -2px 0 24px rgba(0, 0, 0, 0.15);
@@ -94,7 +125,7 @@ body.tabesh-ai-split-hidden .tabesh-ai-main-content {
 	display: none;
 	flex-direction: column;
 	overflow: hidden;
-	transition: all 0.3s ease;
+	transition: all var(--tabesh-chat-transition-duration) ease;
 }
 
 .tabesh-ai-chat-container.active {
@@ -387,16 +418,18 @@ body.tabesh-ai-split-hidden .tabesh-ai-main-content {
 
 	body.tabesh-ai-split-active .tabesh-ai-main-content {
 		margin-right: 0;
-		display: none;
+		transform: translateX(100%);
+		transition: transform var(--tabesh-chat-transition-duration) ease;
 	}
 
 	body.tabesh-ai-split-minimized .tabesh-ai-main-content {
 		margin-right: 0;
-		display: block;
+		transform: translateX(0);
+		transition: transform var(--tabesh-chat-transition-duration) ease;
 	}
 
 	.tabesh-ai-chat-toggle {
-		width: 50px;
+		width: var(--tabesh-chat-width-minimized-mobile);
 	}
 
 	.tabesh-ai-suggestions {
@@ -417,12 +450,12 @@ body.tabesh-ai-split-hidden .tabesh-ai-main-content {
 
 [dir="rtl"] body.tabesh-ai-split-active .tabesh-ai-main-content {
 	margin-right: 0;
-	margin-left: 450px;
+	margin-left: var(--tabesh-chat-width-expanded);
 }
 
 [dir="rtl"] body.tabesh-ai-split-minimized .tabesh-ai-main-content {
 	margin-right: 0;
-	margin-left: 60px;
+	margin-left: var(--tabesh-chat-width-minimized);
 }
 
 [dir="rtl"] body.tabesh-ai-split-hidden .tabesh-ai-main-content {

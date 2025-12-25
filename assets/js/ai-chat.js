@@ -24,14 +24,18 @@
         // Wrap main content if not already wrapped
         wrapMainContent();
 
-        // Initially show as minimized
-        setChatState('minimized');
+        // Start with hidden state by default (less intrusive)
+        // Check if user has a saved preference
+        const savedState = localStorage.getItem('tabesh-ai-chat-state') || 'hidden';
+        setChatState(savedState);
 
-        // Toggle chat from minimized bar
+        // Toggle chat from minimized bar or floating button
         toggle.on('click', function() {
             if (chatState === 'minimized') {
                 setChatState('expanded');
             } else if (chatState === 'expanded') {
+                setChatState('minimized');
+            } else if (chatState === 'hidden') {
                 setChatState('minimized');
             }
         });
@@ -85,15 +89,11 @@
             return; // Already wrapped
         }
 
-        // Wrap all body content except chat elements
-        const chatContainer = $('.tabesh-ai-chat-container').detach();
-        const chatToggle = $('.tabesh-ai-chat-toggle').detach();
+        // Create wrapper without detaching chat elements
+        const chatElements = $('.tabesh-ai-chat-container, .tabesh-ai-chat-toggle');
         
-        $('body > *').wrapAll('<div class="tabesh-ai-main-content"></div>');
-        
-        // Re-append chat elements
-        $('body').append(chatContainer);
-        $('body').append(chatToggle);
+        // Wrap all body children except chat elements
+        $('body > *').not(chatElements).wrapAll('<div class="tabesh-ai-main-content"></div>');
     }
 
     // Set chat state
@@ -105,9 +105,16 @@
         // Remove all state classes
         body.removeClass('tabesh-ai-split-hidden tabesh-ai-split-minimized tabesh-ai-split-active');
         container.removeClass('active minimized');
-        toggle.removeClass('minimized');
+        toggle.removeClass('minimized hidden');
 
         chatState = newState;
+
+        // Save state to localStorage
+        try {
+            localStorage.setItem('tabesh-ai-chat-state', newState);
+        } catch (e) {
+            // Silently fail if localStorage is not available
+        }
 
         switch (newState) {
             case 'expanded':
@@ -124,7 +131,7 @@
 
             case 'hidden':
                 body.addClass('tabesh-ai-split-hidden');
-                // Both container and toggle are hidden by default
+                toggle.addClass('hidden');
                 break;
         }
     }
