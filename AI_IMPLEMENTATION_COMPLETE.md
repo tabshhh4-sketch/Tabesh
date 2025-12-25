@@ -79,7 +79,7 @@ Added complete configuration UI in admin panel:
 - Enable/disable toggle
 - Mode selection dropdown (Direct/Server/Client)
 - API key input with validation
-- Model selection (Gemini 2.5 Flash, 2.0 Flash, 1.5 Flash, 1.5 Pro)
+- Model selection (Gemini 2.0 Flash, 1.5 Flash, 1.5 Pro)
 - Server configuration (for Server/Client modes)
 - Role selection checkboxes
 - Access control checkboxes
@@ -326,7 +326,7 @@ Created comprehensive documentation:
 ## Features Implemented
 
 ### Core Features ✅
-- [x] Google Gemini 2.5 Flash integration (with support for 2.0 and 1.5)
+- [x] Google Gemini 2.0 Flash integration
 - [x] Three operation modes (Direct/Server/Client)
 - [x] Real-time chat interface
 - [x] Form data context awareness
