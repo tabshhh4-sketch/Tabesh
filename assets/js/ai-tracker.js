@@ -43,16 +43,12 @@
      * Setup event listeners
      */
     function setupEventListeners() {
-        // Scroll tracking with depth milestones
-        $(window).on('scroll', debounce(function() {
-            trackScroll();
-            trackScrollDepth();
-        }, config.debounceDelay));
+        // Scroll tracking
+        $(window).on('scroll', debounce(trackScroll, config.debounceDelay));
 
-        // Click tracking with confusion detection
+        // Click tracking
         $(document).on('click', 'a, button', function(e) {
             trackClick(e);
-            detectConfusedUser(e);
         });
 
         // Form field interactions
@@ -68,8 +64,7 @@
         document.addEventListener('visibilitychange', function() {
             if (document.hidden) {
                 trackEvent('page_hidden', {
-                    time_spent: Date.now() - lastActivityTime,
-                    engagement_score: calculateEngagement()
+                    time_spent: Date.now() - lastActivityTime
                 });
                 flushQueue();
             } else {
@@ -302,97 +297,6 @@
         };
     }
 
-    /**
-     * Track scroll depth milestones
-     */
-    function trackScrollDepth() {
-        const milestones = [25, 50, 75, 90, 100];
-        const scrollPercent = Math.round(($(window).scrollTop() / ($(document).height() - $(window).height())) * 100);
-        
-        milestones.forEach(function(milestone) {
-            const key = 'scroll_milestone_' + milestone;
-            if (scrollPercent >= milestone && !sessionStorage.getItem(key)) {
-                sessionStorage.setItem(key, 'true');
-                trackEvent('scroll_milestone', {
-                    milestone: milestone,
-                    page_url: window.location.href
-                });
-            }
-        });
-    }
-
-    /**
-     * Detect confused user patterns
-     */
-    let clickPatterns = [];
-    function detectConfusedUser(event) {
-        const $target = $(event.currentTarget);
-        const elementInfo = {
-            id: $target.attr('id') || '',
-            class: $target.attr('class') || '',
-            time: Date.now()
-        };
-        
-        clickPatterns.push(elementInfo);
-        
-        // Keep only last 10 clicks
-        if (clickPatterns.length > 10) {
-            clickPatterns.shift();
-        }
-        
-        // Check for rapid repeated clicks on same element (confusion indicator)
-        const recentClicks = clickPatterns.slice(-5);
-        const sameElementClicks = recentClicks.filter(function(click) {
-            return click.id === elementInfo.id && click.class === elementInfo.class;
-        });
-        
-        if (sameElementClicks.length >= 3) {
-            trackEvent('confused_user', {
-                element_id: elementInfo.id,
-                element_class: elementInfo.class,
-                click_count: sameElementClicks.length,
-                pattern: 'rapid_same_element'
-            });
-            
-            // Clear pattern to avoid duplicate tracking
-            clickPatterns = [];
-        }
-    }
-
-    /**
-     * Track reading engagement
-     */
-    let readingStartTime = Date.now();
-    let engagementScore = 0;
-    
-    function calculateEngagement() {
-        const timeOnPage = (Date.now() - readingStartTime) / 1000; // seconds
-        const scrollDepth = Math.round(($(window).scrollTop() / ($(document).height() - $(window).height())) * 100);
-        const clickCount = clickPatterns.length;
-        
-        // Simple engagement score: time + scroll + interactions
-        engagementScore = Math.min(100, Math.round(
-            (timeOnPage / 60) * 30 + // Up to 30 points for time (max at 2 min)
-            (scrollDepth / 100) * 40 + // Up to 40 points for scroll
-            Math.min(clickCount * 3, 30) // Up to 30 points for interactions
-        ));
-        
-        return engagementScore;
-    }
-
-    /**
-     * Track engagement on page leave
-     */
-    $(window).on('beforeunload', function() {
-        const finalEngagement = calculateEngagement();
-        trackEvent('engagement_score', {
-            score: finalEngagement,
-            time_on_page: (Date.now() - readingStartTime) / 1000,
-            scroll_depth: Math.round(($(window).scrollTop() / ($(document).height() - $(window).height())) * 100),
-            interactions: clickPatterns.length
-        });
-    });
-
     // Initialize on document ready
     $(document).ready(function() {
         initTracker();
@@ -401,9 +305,7 @@
     // Expose API
     window.tabeshAITracker = {
         trackEvent: trackEvent,
-        flushQueue: flushQueue,
-        getEngagementScore: calculateEngagement,
-        detectConfusion: detectConfusedUser
+        flushQueue: flushQueue
     };
 
 })(jQuery);
