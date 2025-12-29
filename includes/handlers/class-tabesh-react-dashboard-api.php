@@ -284,7 +284,7 @@ class Tabesh_React_Dashboard_API {
 		if ( ! $admin ) {
 			return new WP_Error(
 				'service_unavailable',
-				__( 'سرویس آماری در دسترس نیست', 'tabesh' ),
+				__( 'هندلر مدیریت مقداردهی نشده است', 'tabesh' ),
 				array( 'status' => 503 )
 			);
 		}
@@ -443,7 +443,7 @@ class Tabesh_React_Dashboard_API {
 		$order_array = (array) $order;
 
 		// Ensure numeric fields are properly typed.
-		$numeric_fields = array( 'id', 'user_id', 'total_price', 'pages', 'quantity', 'archived' );
+		$numeric_fields = array( 'id', 'user_id', 'pages', 'quantity', 'archived' );
 		foreach ( $numeric_fields as $field ) {
 			if ( isset( $order_array[ $field ] ) ) {
 				$order_array[ $field ] = (int) $order_array[ $field ];
