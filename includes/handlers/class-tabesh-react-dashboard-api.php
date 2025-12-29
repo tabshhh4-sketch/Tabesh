@@ -149,17 +149,17 @@ class Tabesh_React_Dashboard_API {
 		$table = $wpdb->prefix . 'tabesh_orders';
 
 		// Get parameters.
-		$page        = max( 1, intval( $request->get_param( 'page' ) ?? 1 ) );
-		$per_page    = min( 100, max( 1, intval( $request->get_param( 'per_page' ) ?? 20 ) ) );
-		$status      = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
-		$search      = sanitize_text_field( $request->get_param( 'search' ) ?? '' );
-		$archived    = filter_var( $request->get_param( 'archived' ) ?? false, FILTER_VALIDATE_BOOLEAN );
-		$date_from   = sanitize_text_field( $request->get_param( 'date_from' ) ?? '' );
-		$date_to     = sanitize_text_field( $request->get_param( 'date_to' ) ?? '' );
+		$page      = max( 1, intval( $request->get_param( 'page' ) ?? 1 ) );
+		$per_page  = min( 100, max( 1, intval( $request->get_param( 'per_page' ) ?? 20 ) ) );
+		$status    = sanitize_text_field( $request->get_param( 'status' ) ?? '' );
+		$search    = sanitize_text_field( $request->get_param( 'search' ) ?? '' );
+		$archived  = filter_var( $request->get_param( 'archived' ) ?? false, FILTER_VALIDATE_BOOLEAN );
+		$date_from = sanitize_text_field( $request->get_param( 'date_from' ) ?? '' );
+		$date_to   = sanitize_text_field( $request->get_param( 'date_to' ) ?? '' );
 
 		// Build query.
-		$where        = array();
-		$where[]      = $wpdb->prepare( 'archived = %d', $archived ? 1 : 0 );
+		$where   = array();
+		$where[] = $wpdb->prepare( 'archived = %d', $archived ? 1 : 0 );
 
 		if ( ! empty( $status ) ) {
 			$where[] = $wpdb->prepare( 'status = %s', $status );
@@ -187,14 +187,15 @@ class Tabesh_React_Dashboard_API {
 		$where_clause = implode( ' AND ', $where );
 
 		// Get total count.
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$total = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE $where_clause" );
 
 		// Get orders for current page.
 		$offset = ( $page - 1 ) * $per_page;
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$orders = $wpdb->get_results(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				"SELECT * FROM $table WHERE $where_clause ORDER BY created_at DESC LIMIT %d OFFSET %d",
 				$per_page,
 				$offset
@@ -240,8 +241,10 @@ class Tabesh_React_Dashboard_API {
 			);
 		}
 
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 		$order = $wpdb->get_row(
 			$wpdb->prepare(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				"SELECT * FROM $table WHERE id = %d",
 				$order_id
 			)
@@ -276,7 +279,7 @@ class Tabesh_React_Dashboard_API {
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
-	public function get_statistics( $request ) {
+	public function get_statistics( $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		$admin = Tabesh()->admin;
 		if ( ! $admin ) {
 			return new WP_Error(
@@ -297,7 +300,7 @@ class Tabesh_React_Dashboard_API {
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
-	public function get_ftp_status( $request ) {
+	public function get_ftp_status( $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		$ftp_handler = new Tabesh_FTP_Handler();
 		$result      = $ftp_handler->test_connection();
 
@@ -316,7 +319,7 @@ class Tabesh_React_Dashboard_API {
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_REST_Response
 	 */
-	public function refresh_ftp( $request ) {
+	public function refresh_ftp( $request ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found
 		// Force a fresh connection test.
 		$ftp_handler = new Tabesh_FTP_Handler();
 		$result      = $ftp_handler->test_connection();
