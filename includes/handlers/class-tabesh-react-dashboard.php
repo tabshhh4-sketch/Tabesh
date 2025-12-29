@@ -53,6 +53,14 @@ class Tabesh_React_Dashboard {
 			return;
 		}
 
+		// Check if React dashboard is enabled in settings.
+		$use_react_dashboard = Tabesh()->get_setting( 'use_react_dashboard', '0' );
+
+		// If React dashboard is not enabled, don't load React assets.
+		if ( '1' !== $use_react_dashboard ) {
+			return;
+		}
+
 		// Enqueue built React app.
 		$dist_path = TABESH_PLUGIN_DIR . 'assets/dist/admin-dashboard/';
 		$dist_url  = TABESH_PLUGIN_URL . 'assets/dist/admin-dashboard/';
@@ -132,17 +140,38 @@ class Tabesh_React_Dashboard {
 			return '<div class="tabesh-access-denied">' . esc_html__( 'شما دسترسی لازم برای مشاهده این صفحه را ندارید.', 'tabesh' ) . '</div>';
 		}
 
+		// Check if React dashboard is enabled in settings.
+		$use_react_dashboard = Tabesh()->get_setting( 'use_react_dashboard', '0' );
+
+		// If React dashboard is not enabled, use PHP template.
+		if ( '1' !== $use_react_dashboard ) {
+			return $this->render_php_dashboard();
+		}
+
 		// Check if React build exists.
 		$dist_path = TABESH_PLUGIN_DIR . 'assets/dist/admin-dashboard/admin-dashboard.js';
 		if ( ! file_exists( $dist_path ) ) {
-			return '<div class="tabesh-build-error">' .
-				esc_html__( 'داشبورد React هنوز ساخته نشده است. ', 'tabesh' ) .
-				( defined( 'WP_DEBUG' ) && WP_DEBUG ?
-					'<br><code>cd assets/react && npm run build</code>' : '' ) .
-				'</div>';
+			// Log error if debug mode is enabled.
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+				error_log( 'Tabesh: React dashboard build files not found. Falling back to PHP template.' );
+			}
+			// Fallback to PHP template if React build doesn't exist.
+			return $this->render_php_dashboard();
 		}
 
 		// Return root div for React to mount.
 		return '<div id="tabesh-admin-dashboard-root"></div>';
+	}
+
+	/**
+	 * Render PHP dashboard template (fallback)
+	 *
+	 * @return string
+	 */
+	private function render_php_dashboard() {
+		// Load the PHP template.
+		ob_start();
+		include TABESH_PLUGIN_DIR . 'templates/admin/shortcode-admin-dashboard.php';
+		return ob_get_clean();
 	}
 }
